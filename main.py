@@ -21,7 +21,7 @@ SF_PASSWD = os.getenv("SF_PASSWD")
 SF_SERVER_NAME = os.getenv("SF_SERVER_NAME")
 api = ""
 
-initial_extensions = ["satisfactory"]
+initial_extensions = ["cogs.satisfactory"]
 
 intents = discord.Intents.default()
 # intents.members = True
