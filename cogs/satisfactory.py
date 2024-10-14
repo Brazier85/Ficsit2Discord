@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 from satisfactory_api_client import APIError
 
+bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/s2d_logo.webp"
+
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     """**!sf <command>**\nEverything Satisfactory related."""
@@ -24,9 +26,18 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """This command will save the game an then restart the server."""
         api = self.api
         if await self.save(api).success:
-            return api.self.shutdown()
+            if api.self.shutdown().success:
+                embed = self.create_embed(title="Server Successfully stopped!")
+                embed.add_field(
+                    name="Server is restarting...",
+                    value="The restart can take up to 5 minutes.",
+                    inline=False,
+                )
+                ctx.send(embed=embed)
+            else:
+                ctx.send("Could not restart the server!")
         else:
-            return "I could not save the game! No restart possible!"
+            ctx.send("I could not save the game! No restart possible!")
 
     @commands.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
@@ -52,19 +63,13 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         file = discord.File(f"./files/savegames/{save_filename}")
 
         # Define embed
-        embed = discord.Embed(
-            title=f"{self.server} Savegame",
-            # url=link,
-            colour=0x00F51D,
-            timestamp=datetime.datetime.now(),
-        )
+        embed = self.create_embed(title=f"{self.server} Savegame", color=0x00F51D)
         embed.add_field(
             name="",
             value=":white_check_mark: Successfully saved game!",
             inline=False,
         )
         embed.add_field(name="Save File", value=f"`{save_filename}`")
-        embed.set_footer(text="Harald")
         try:
             await ctx.send(file=file, embed=embed)
             await msg.delete()
@@ -91,18 +96,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             color = 0xFFF700
 
         # Define Embed
-        embed = discord.Embed(
-            title=f"{self.servername} Status",
-            colour=color,
-            timestamp=datetime.datetime.now(),
-        )
+        embed = self.create_embed(color=color, title=f"{self.servername} Status")
 
         embed.add_field(name="", value=f"{icon} Server is **{health}**", inline=False)
         embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
         embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
         embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
-
-        embed.set_footer(text="Server Status Updated")
 
         await ctx.send(embed=embed)
 
@@ -113,14 +112,21 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         settings = api.get_server_options()
 
         # Define Embed
+        embed = self.create_embed(title=f"{self.servername} current settings")
+        embed.add_field(name="", value=f"{settings}", inline=True)
+        await ctx.send(embed=embed)
+
+    async def create_embed(self, title="Satisfactory2Discord Bot", color=0x00B0F4):
+        # Define Embed
         embed = discord.Embed(
-            title=f"{self.servername} current settings",
-            colour=0x00F51D,
+            title=title,
+            colour=color,
             timestamp=datetime.datetime.now(),
         )
-        embed.add_field(name="", value=f"{settings}", inline=True)
-        embed.set_footer(text="Current state from")
-        await ctx.send(embed=embed)
+        embed.set_author(name="Satisfactory2Discord Bot", icon_url=bot_logo)
+        embed.set_thumbnail(url=bot_logo)
+        embed.set_footer(text="Satisfactory2Discord Bot")
+        return embed
 
 
 async def setup(bot):
