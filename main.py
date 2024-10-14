@@ -19,8 +19,9 @@ SF_IP = os.getenv("SF_IP")
 SF_PORT = os.getenv("SF_PORT")
 SF_PASSWD = os.getenv("SF_PASSWD")
 SF_SERVER_NAME = os.getenv("SF_SERVER_NAME")
-api = ""
 
+# Define global variables
+api = ""
 initial_extensions = ["cogs.satisfactory"]
 
 intents = discord.Intents.default()
@@ -29,20 +30,25 @@ intents = discord.Intents.default()
 # intents.messages = True
 
 
+# Define all prefixes here
 async def get_prefix(bot, message):
     prefixes = ["!sf ", "!"]
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
+# Define bot
 bot = commands.Bot(
     command_prefix=get_prefix,
     intents=intents.all(),
-    description="Harald, a litte discord bot",
+    description="Ficit2Discord - your personal Assistant",
 )
 
+
+# is this still needed?
 bot.help_command = CustomHelpCommand()
 
 
+# Event wehn the bot ist started
 @bot.event
 async def on_ready():
     await load_cogs()
@@ -51,6 +57,7 @@ async def on_ready():
     )
 
 
+# When something goes wrong
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
@@ -59,6 +66,8 @@ async def on_command_error(ctx, error):
         )
 
 
+# Loading cogs into the bot
+# see initial_extensions variable
 async def load_cogs():
     for extension in initial_extensions:
         try:
@@ -69,15 +78,20 @@ async def load_cogs():
             print(f"Failed to load extension {extension}: {e}", file=sys.stderr)
 
 
+# Main function
 def main():
     # sf.test(SF_IP, SF_PORT, SF_PASSWD)
-    # Connect to the sf-server
+    # Create the API connection
     bot.api = sf.connect(SF_IP, SF_PORT)
     bot.server = SF_SERVER_NAME
     # Login to the sf-server
-    sf.login(bot.api, SF_PASSWD)
-    # Login into Discord
-    bot.run(TOKEN, reconnect=True)
+    if sf.login(bot.api, SF_PASSWD).success:
+        # Login into Discord
+        bot.run(TOKEN, reconnect=True)
+    else:
+        print(
+            "Could not log into SF-server as Administrator. Please check your access rights and the credentials"
+        )
 
 
 if __name__ == "__main__":

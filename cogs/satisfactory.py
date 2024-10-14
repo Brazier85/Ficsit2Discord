@@ -106,6 +106,22 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
+    @commands.command(name="settings")
+    async def options(self, ctx):
+        """Show the current server settings"""
+        api = self.api
+        settings = api.get_server_options()
+
+        # Define Embed
+        embed = discord.Embed(
+            title=f"{self.servername} current settings",
+            colour=0x00F51D,
+            timestamp=datetime.datetime.now(),
+        )
+        embed.add_field(name="", value=f"{settings}", inline=True)
+        embed.set_footer(text="Current state from")
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Satisfactory(bot))
