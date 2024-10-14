@@ -110,10 +110,20 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """Show the current server settings"""
         api = self.api
         settings = api.get_server_options()
+        current_settings = settings.data["serverOptions"]
+        auto_pause = current_settings["FG.DSAutoPause"]
+        auto_save = current_settings["FG.DSAutoSaveOnDisconnect"]
+        save_interval = current_settings["FG.AutosaveInterval"]
+        restart_time = current_settings["FG.ServerRestartInterval"]
+        network_quality = current_settings["FG.NetworkQuality"]
 
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} current settings")
-        embed.add_field(name="", value=f"{settings}", inline=True)
+        embed.add_field(name="Auto Pause", value=f"{auto_pause}", inline=True)
+        embed.add_field(name="Auto Save", value=f"{auto_save}", inline=True)
+        embed.add_field(name="Save Interval", value=f"{save_interval}", inline=True)
+        embed.add_field(name="Restart Time", value=f"{restart_time}", inline=True)
+        embed.add_field(name="network Quality", value=f"{network_quality}", inline=True)
         await ctx.send(embed=embed)
 
     async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
