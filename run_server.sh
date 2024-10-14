@@ -17,6 +17,8 @@ start)
         echo "Script is already running with PID: $(cat $PID_FILE)"
         exit 1
     fi
+    echo "Check for a new version"
+    git pull
     echo "Starting script..."
     nohup $SCRIPT >$LOG_FILE 2>&1 &
     echo $! >$PID_FILE
