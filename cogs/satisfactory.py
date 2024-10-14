@@ -116,16 +116,16 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="", value=f"{settings}", inline=True)
         await ctx.send(embed=embed)
 
-    async def create_embed(self, title="Satisfactory2Discord Bot", color=0x00B0F4):
+    async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
         # Define Embed
         embed = discord.Embed(
             title=title,
             colour=color,
             timestamp=datetime.datetime.now(),
         )
-        embed.set_author(name="Satisfactory2Discord Bot", icon_url=bot_logo)
+        embed.set_author(name="Ficsit2Discord Bot", icon_url=bot_logo)
         embed.set_thumbnail(url=bot_logo)
-        embed.set_footer(text="Satisfactory2Discord Bot")
+        embed.set_footer(text="Ficsit2Discord Bot")
         return embed
 
 
