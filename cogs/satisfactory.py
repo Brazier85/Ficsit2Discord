@@ -27,7 +27,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         api = self.api
         if await self.save(api).success:
             if api.self.shutdown().success:
-                embed = self.create_embed(title="Server Successfully stopped!")
+                embed = await self.create_embed(title="Server Successfully stopped!")
                 embed.add_field(
                     name="Server is restarting...",
                     value="The restart can take up to 5 minutes.",
@@ -63,7 +63,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         file = discord.File(f"./files/savegames/{save_filename}")
 
         # Define embed
-        embed = self.create_embed(title=f"{self.server} Savegame", color=0x00F51D)
+        embed = await self.create_embed(title=f"{self.server} Savegame", color=0x00F51D)
         embed.add_field(
             name="",
             value=":white_check_mark: Successfully saved game!",
@@ -96,7 +96,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             color = 0xFFF700
 
         # Define Embed
-        embed = self.create_embed(color=color, title=f"{self.servername} Status")
+        embed = await self.create_embed(color=color, title=f"{self.servername} Status")
 
         embed.add_field(name="", value=f"{icon} Server is **{health}**", inline=False)
         embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
@@ -112,7 +112,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         settings = api.get_server_options()
 
         # Define Embed
-        embed = self.create_embed(title=f"{self.servername} current settings")
+        embed = await self.create_embed(title=f"{self.servername} current settings")
         embed.add_field(name="", value=f"{settings}", inline=True)
         await ctx.send(embed=embed)
 
