@@ -1,5 +1,7 @@
 # Ficit2Discord Bot
 
+![S2D Logo](files/s2d_logo.webp)
+
 ## Overview
 Ficit2Discord is a custom Discord bot that interacts with a dedicated Satisfactory game server. The bot allows server administrators to manage the server directly from Discord, including saving the game, restarting the server, and viewing server stats.
 
