@@ -114,7 +114,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         auto_pause = current_settings["FG.DSAutoPause"]
         auto_save = current_settings["FG.DSAutoSaveOnDisconnect"]
         save_interval = current_settings["FG.AutosaveInterval"]
-        restart_time = current_settings["FG.ServerRestartInterval"]
+        restart_time = current_settings["FG.ServerRestartTimeSlot"]
+        gameplay_data = current_settings["FG.SendGameplayData"]
         network_quality = current_settings["FG.NetworkQuality"]
 
         # Define Embed
@@ -123,6 +124,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="Auto Save", value=f"{auto_save}", inline=True)
         embed.add_field(name="Save Interval", value=f"{save_interval}", inline=True)
         embed.add_field(name="Restart Time", value=f"{restart_time}", inline=True)
+        embed.add_field(name="Send Gameplay Data", value=f"{gameplay_data}")
         embed.add_field(name="network Quality", value=f"{network_quality}", inline=True)
         await ctx.send(embed=embed)
 
