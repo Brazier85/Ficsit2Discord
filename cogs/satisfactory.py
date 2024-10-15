@@ -47,9 +47,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                     value="The restart can take up to 5 minutes.",
                     inline=False,
                 )
-                ctx.send(embed=embed)
+                await ctx.send(embed=embed)
         else:
-            ctx.send("I could not save the game! No restart possible!")
+            await ctx.send("I could not save the game! No restart possible!")
 
     @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
