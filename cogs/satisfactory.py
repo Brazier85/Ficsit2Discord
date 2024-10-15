@@ -59,7 +59,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         except SaveGameFailed as error:
             await msg.edit(content=f":x: Could not save game: {error}")
         else:
-            print("Game saved!")
             await msg.edit(content=":white_check_mark: Game saved Successfully!")
             await self.download_save(ctx, msg, save_name)
             return True
@@ -73,9 +72,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         except:
             print("Could not download save game")
         else:
-            print("File saved")
             file = discord.File(save_path)
-            print("File added to Discord")
 
             # Define embed
             embed = await self.create_embed(
@@ -87,7 +84,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 inline=False,
             )
             embed.add_field(name="Save File", value=f"`{save_filename}`")
-            print("Sending data")
             try:
                 await ctx.send(file=file, embed=embed)
                 await msg.delete()
@@ -103,12 +99,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         # Create vars
         playtime = str(datetime.timedelta(seconds=current_state["totalGameDuration"]))
-        p_max = str(current_state["playerLimit"])
+        p_max = current_state["playerLimit"]
         p_online = current_state["numConnectedPlayers"]
         ticks = current_state["averageTickRate"]
         tech_tier = current_state["techTier"]
         session_name = current_state["activeSessionName"]
-        paused = current_state["isGamesPaused"]
+        paused = current_state["isGamePaused"]
         health = current_health
         if health == "healthy":
             icon = ":green_circle:"
@@ -138,12 +134,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """Show the current server settings"""
         api = self.api
         current_settings = api.get_server_options()["serverOptions"]
-        print(current_settings)
 
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
         for param, value in current_settings.items():
-            print(f"Param: {param}, Value: {value}")
             embed.add_field(
                 name=parameter_mapping.get(param, param),
                 value=value,
