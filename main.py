@@ -9,14 +9,14 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 # SF Imports
-import sf
+from pyfactorybridge import API
 
 # Load Variables from env file
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+DC_TOKEN = os.getenv("DISCORD_TOKEN")
 SF_IP = os.getenv("SF_IP")
 SF_PORT = os.getenv("SF_PORT")
-SF_PASSWD = os.getenv("SF_PASSWD")
+SF_TOKEN = os.getenv("SF_TOKEN")
 SF_SERVER_NAME = os.getenv("SF_SERVER_NAME")
 
 # Define global variables
@@ -75,18 +75,11 @@ async def load_cogs():
 
 # Main function
 def main():
-    # sf.test(SF_IP, SF_PORT, SF_PASSWD)
-    # Create the API connection
-    bot.api = sf.connect(SF_IP, SF_PORT, SF_PASSWD)
+    # Connect to the Satisfactory server
+    bot.api = API(address=f"{SF_IP}:{SF_PORT}", token=SF_TOKEN)
     bot.server = SF_SERVER_NAME
-    # Login to the sf-server
-    # if sf.login(bot.api, SF_PASSWD).success:
     # Login into Discord
-    bot.run(TOKEN, reconnect=True)
-    # else:
-    # print(
-    # "Could not log into SF-server as Administrator. Please check your access rights and the credentials"
-    # )
+    bot.run(DC_TOKEN, reconnect=True)
 
 
 if __name__ == "__main__":

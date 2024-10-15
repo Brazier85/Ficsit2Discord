@@ -17,7 +17,6 @@ Ficsit2Discord is a custom Discord bot that interacts with a dedicated Satisfact
 - Python 3.8+
 - A running Satisfactory game server
 - Discord API credentials (Bot Token)
-- `satisfactory_api_client` package to interact with the Satisfactory server
 - Required Python libraries:
   - `discord.py`
   - `python-dotenv`
@@ -48,7 +47,7 @@ Ficsit2Discord is a custom Discord bot that interacts with a dedicated Satisfact
    DISCORD_TOKEN=your_discord_bot_token
    SF_IP=your_satisfactory_server_ip
    SF_PORT=your_satisfactory_server_port
-   SF_PASSWD=your_satisfactory_server_password
+   SF_TOKEN=your_satisfactory_server_token
    SF_SERVER_NAME=your_server_name
    ```
 
@@ -56,7 +55,7 @@ Ficsit2Discord is a custom Discord bot that interacts with a dedicated Satisfact
 
 - **Bot Prefix**: The bot responds to commands starting with `!sf`. You can modify the prefix by adjusting the `prefix` in the `Satisfactory` cog.
   
-- **Environment Variables**: Ensure the `.env` file contains the correct details for your Discord bot and Satisfactory server.
+- **Environment Variables**: Ensure the `.env` file contains the correct details for your Discord bot and Satisfactory server. You can get the api token via the ingame server manager console: `server.GenerateAPIToken`
 
 ## Commands
 

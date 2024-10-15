@@ -67,7 +67,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def download_save(self, ctx, msg, save_name):
         api = self.api
         save_filename = f"{save_name}.sav"
-        save_path = "./files/savegames/{save_filename}"
+        save_path = f"./files/savegames/{save_filename}"
         try:
             api.download_save_game(save_name, save_path)
         except:
