@@ -35,8 +35,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def restart(self, ctx):
         """This command will save the game an then restart the server."""
         api = self.api
-        if await self.save(api).success:
-            if api.self.shutdown().success:
+        if await self.save(api):
+            try:
+                api.shutdown()
+            except:
+                print("Error on shutdown!")
+            else:
                 embed = await self.create_embed(title="Server Successfully stopped!")
                 embed.add_field(
                     name="Server is restarting...",
@@ -44,8 +48,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                     inline=False,
                 )
                 ctx.send(embed=embed)
-            else:
-                ctx.send("Could not restart the server!")
         else:
             ctx.send("I could not save the game! No restart possible!")
 
