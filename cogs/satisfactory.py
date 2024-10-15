@@ -35,7 +35,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def restart(self, ctx):
         """This command will save the game an then restart the server."""
         api = self.api
-        if await self.save(api):
+        if await self.save(ctx):
             try:
                 api.shutdown()
             except:
