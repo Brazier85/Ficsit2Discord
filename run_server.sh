@@ -10,6 +10,8 @@ SCRIPT="./main.py"
 LOG_FILE="Ficit2Discord.log"
 PID_FILE="current.pid"
 
+source .venv/bin/activate
+
 # Check the input parameter
 case "$1" in
 start)
