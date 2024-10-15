@@ -195,13 +195,6 @@ class SettingsModal(discord.ui.Modal):
         )
         self.add_item(self.gameplay_data)
 
-        self.network_quality = discord.ui.TextInput(
-            label="Network Quality",
-            placeholder=f"{settings['FG.NetworkQuality']}",
-            required=True,
-        )
-        self.add_item(self.network_quality)
-
     # Function triggered when the modal is submitted
     async def on_submit(self, interaction: discord.Interaction):
         # Get the selected values from the modal
