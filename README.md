@@ -20,7 +20,7 @@ Ficsit2Discord is a custom Discord bot that interacts with a dedicated Satisfact
 - Required Python libraries:
   - `discord.py`
   - `python-dotenv`
-  - `satisfactory_api_client`
+  - `PyFactoryBridge`
 
 ## Installation
 
@@ -96,7 +96,7 @@ Ficsit2Discord is a custom Discord bot that interacts with a dedicated Satisfact
 
 A special thanks to the maintainers of the libraries used in this project:
 - **[`discord.py`](https://github.com/Rapptz/discord.py)**: For enabling Discord bot functionality. Maintained by [Rapptz](https://github.com/Rapptz).
-- **[`satisfactory_api_client`](https://github.com/Programmer-Timmy/satisfactory-dedicated-server-api-SDK)**: For enabling smooth communication with the Satisfactory server. Maintained by [Programmer-Timmy](https://github.com/Programmer-Timmy).
+- **[`PyFactoryBridge`](https://github.com/Jayy001/PyFactoryBridge)**: For enabling smooth communication with the Satisfactory server. Maintained by [Jayy001](https://github.com/Jayy001).
 
 ## License
 
