@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from satisfactory_api_client import APIError
 
-bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/s2d_logo.webp"
+bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
@@ -12,16 +12,15 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     def __init__(self, bot):
         self.bot = bot
-        self._last_member = None
-        self.prefix = "!sf "
         self.api = self.bot.api
         self.servername = self.bot.server
 
-    # Custom check for prefix enforcement
-    async def cog_check(self, ctx):
-        return ctx.prefix == self.prefix
+    @commands.group()
+    async def sf(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid sf command!")
 
-    @commands.command(name="restart")
+    @sf.command(name="restart")
     async def restart(self, ctx):
         """This command will save the game an then restart the server."""
         api = self.api
@@ -39,7 +38,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         else:
             ctx.send("I could not save the game! No restart possible!")
 
-    @commands.command(name="save")
+    @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
         """this command will save the game"""
         api = self.api
@@ -76,7 +75,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         except APIError as e:
             print(f"Error: {e}")
 
-    @commands.command(name="state")
+    @sf.command(name="state")
     async def state(self, ctx):
         """Will post the current server state"""
         api = self.api
@@ -105,7 +104,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="settings")
+    @sf.command(name="settings")
     async def options(self, ctx):
         """Show the current server settings"""
         api = self.api

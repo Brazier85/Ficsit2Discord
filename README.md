@@ -1,7 +1,7 @@
 # Ficsit2Discord Bot
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/s2d_logo.webp" width="300" height="300">
+<img src="https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp" width="300" height="300">
 </p>
 
 ## Overview

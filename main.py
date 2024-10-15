@@ -32,7 +32,7 @@ intents = discord.Intents.default()
 
 # Define all prefixes here
 async def get_prefix(bot, message):
-    prefixes = ["!sf ", "!"]
+    prefixes = ["!"]
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
