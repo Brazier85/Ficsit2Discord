@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 
 # SF Imports
 import sf
-from custom_help import CustomHelpCommand
 
 # Load Variables from env file
 load_dotenv()
@@ -22,7 +21,6 @@ SF_SERVER_NAME = os.getenv("SF_SERVER_NAME")
 
 # Define global variables
 api = ""
-bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 initial_extensions = ["cogs.satisfactory"]
 
 intents = discord.Intents.default()
@@ -43,10 +41,6 @@ bot = commands.Bot(
     intents=intents.all(),
     description="Ficit2Discord - your personal Assistant",
 )
-
-
-# is this still needed?
-bot.help_command = CustomHelpCommand()
 
 
 # Event wehn the bot ist started
@@ -83,16 +77,16 @@ async def load_cogs():
 def main():
     # sf.test(SF_IP, SF_PORT, SF_PASSWD)
     # Create the API connection
-    bot.api = sf.connect(SF_IP, SF_PORT)
+    bot.api = sf.connect(SF_IP, SF_PORT, SF_PASSWD)
     bot.server = SF_SERVER_NAME
     # Login to the sf-server
-    if sf.login(bot.api, SF_PASSWD).success:
-        # Login into Discord
-        bot.run(TOKEN, reconnect=True)
-    else:
-        print(
-            "Could not log into SF-server as Administrator. Please check your access rights and the credentials"
-        )
+    # if sf.login(bot.api, SF_PASSWD).success:
+    # Login into Discord
+    bot.run(TOKEN, reconnect=True)
+    # else:
+    # print(
+    # "Could not log into SF-server as Administrator. Please check your access rights and the credentials"
+    # )
 
 
 if __name__ == "__main__":

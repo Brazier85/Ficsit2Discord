@@ -1,17 +1,20 @@
 # from pyfactorybridge import API
-from satisfactory_api_client import SatisfactoryAPI
-from satisfactory_api_client.data import MinimumPrivilegeLevel
+# from satisfactory_api_client import SatisfactoryAPI
+# from satisfactory_api_client.data import MinimumPrivilegeLevel
+
+from pyfactorybridge import API
 
 
 # Connect to the Satisfactory server
-def connect(ip, port):
-    return SatisfactoryAPI(host=ip, port=port)
+def connect(ip, port, passwd):
+    # return SatisfactoryAPI(host=ip, port=port)
+    return API(address=f"{ip}:{port}", password=passwd)
 
 
 # Login into the Satisfactory server an check for Admin access rights
-def login(api, pwd):
-    api.password_login(MinimumPrivilegeLevel.ADMINISTRATOR, password=pwd)
-    return api.verify_authentication_token()
+# def login(api, pwd):
+# api.password_login(MinimumPrivilegeLevel.ADMINISTRATOR, password=pwd)
+# return api.verify_authentication_token()
 
 
 # def test(ip, port, passwd):

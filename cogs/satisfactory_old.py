@@ -1,20 +1,11 @@
 import datetime
+import json
 
 import discord
 from discord.ext import commands
-from pyfactorybridge.exceptions import SaveGameFailed
+from satisfactory_api_client import APIError
 
 bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
-
-# Dictionary mapping technical parameters to human-friendly names
-parameter_mapping = {
-    "FG.DSAutoPause": "Auto Pause",
-    "FG.DSAutoSaveOnDisconnect": "Save on DC",
-    "FG.AutosaveInterval": "Autosave Interval",
-    "FG.ServerRestartTimeSlot": "Server Restart Time",
-    "FG.SendGameplayData": "Send Gameplay Data",
-    "FG.NetworkQuality": "Network Quality",
-}
 
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
@@ -54,62 +45,50 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """This command will save the game"""
         api = self.api
         msg = await ctx.send("Saving game...")
-        try:
-            api.save_game(SaveName=save_name)
-        except SaveGameFailed as error:
-            await msg.edit(content=f":x: Could not save game: {error}")
-        else:
+        response = api.save_game(save_name)
+        if response.success:
             print("Game saved!")
             await msg.edit(content=":white_check_mark: Game saved Successfully!")
             await self.download_save(ctx, msg, save_name)
             return True
+        else:
+            await msg.edit(content=":x: Could not save game!")
 
     async def download_save(self, ctx, msg, save_name):
         api = self.api
         save_filename = f"{save_name}.sav"
-        save_path = "./files/savegames/{save_filename}"
-        try:
-            api.download_save_game(save_name, save_path)
-        except:
-            print("Could not download save game")
-        else:
+        with open(f"./files/savegames/{save_filename}", "wb") as file:
+            file.write(api.download_save_game(save_name).data)
             print("File saved")
-            file = discord.File(save_path)
-            print("File added to Discord")
 
-            # Define embed
-            embed = await self.create_embed(
-                title=f"{self.servername} Savegame", color=0x00F51D
-            )
-            embed.add_field(
-                name="",
-                value=":white_check_mark: Successfully saved game!",
-                inline=False,
-            )
-            embed.add_field(name="Save File", value=f"`{save_filename}`")
-            print("Sending data")
-            try:
-                await ctx.send(file=file, embed=embed)
-                await msg.delete()
-            except:
-                print("Error sending file")
+        file = discord.File(f"./files/savegames/{save_filename}")
+
+        # Define embed
+        embed = await self.create_embed(title=f"{self.server} Savegame", color=0x00F51D)
+        embed.add_field(
+            name="",
+            value=":white_check_mark: Successfully saved game!",
+            inline=False,
+        )
+        embed.add_field(name="Save File", value=f"`{save_filename}`")
+        try:
+            await ctx.send(file=file, embed=embed)
+            await msg.delete()
+        except APIError as e:
+            print(f"Error: {e}")
 
     @sf.command(name="state")
     async def state(self, ctx):
         """Will post the current server state"""
         api = self.api
-        current_state = api.query_server_state()["serverGameState"]
-        current_health = api.get_server_health()["health"]
-
-        # Create vars
+        res_state = api.query_server_state()
+        res_health = api.health_check()
+        current_state = res_state.data["serverGameState"]
         playtime = str(datetime.timedelta(seconds=current_state["totalGameDuration"]))
         p_max = str(current_state["playerLimit"])
         p_online = current_state["numConnectedPlayers"]
         ticks = current_state["averageTickRate"]
-        tech_tier = current_state["techTier"]
-        session_name = current_state["activeSessionName"]
-        paused = current_state["isGamesPaused"]
-        health = current_health
+        health = res_health.data["health"]
         if health == "healthy":
             icon = ":green_circle:"
             color = 0x00F51D
@@ -124,31 +103,30 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
         embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
         embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
-        embed.add_field(name="Game paused", value=f"{paused}", inline=True)
-        embed.add_field(name="Tech Tier", value=f"{tech_tier}", inline=True)
-        embed.add_field(name="Session Name", value=f"{session_name}", inline=True)
 
         await ctx.send(embed=embed)
-
-    async def get_friendly_name(self, parameter):
-        return parameter_mapping.get(parameter, parameter)
 
     @sf.command(name="settings")
     async def options(self, ctx):
         """Show the current server settings"""
         api = self.api
-        current_settings = api.get_server_options()["serverOptions"]
-        print(current_settings)
+        settings = api.get_server_options()
+        current_settings = settings.data["serverOptions"]
+        auto_pause = current_settings["FG.DSAutoPause"]
+        auto_save = current_settings["FG.DSAutoSaveOnDisconnect"]
+        save_interval = current_settings["FG.AutosaveInterval"]
+        restart_time = current_settings["FG.ServerRestartTimeSlot"]
+        gameplay_data = current_settings["FG.SendGameplayData"]
+        network_quality = current_settings["FG.NetworkQuality"]
 
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
-        for param, value in current_settings.items():
-            print(f"Param: {param}, Value: {value}")
-            embed.add_field(
-                name=parameter_mapping.get(param, param),
-                value=value,
-                inline=True,
-            )
+        embed.add_field(name="Auto Pause", value=f"{auto_pause}", inline=True)
+        embed.add_field(name="Auto Save", value=f"{auto_save}", inline=True)
+        embed.add_field(name="Save Interval", value=f"{save_interval}", inline=True)
+        embed.add_field(name="Restart Time", value=f"{restart_time}", inline=True)
+        embed.add_field(name="Send Gameplay Data", value=f"{gameplay_data}")
+        embed.add_field(name="Network Quality", value=f"{network_quality}", inline=True)
 
         await ctx.send(embed=embed)
 
@@ -158,46 +136,26 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send("Command not found. Use `!help sf`")
 
-    @set.command(name="auto_save")
-    async def auto_save(self, ctx, value):
+    @set.command(name="autosave")
+    async def autosave(self, ctx, value):
         """Auto save game on player disconnect"""
-        await self.change_setting(ctx, "FG.DSAutoSaveOnDisconnect", value)
-
-    @set.command(name="auto_pause")
-    async def auto_pause(self, ctx, value):
-        """Auto pause game on player disconnect"""
-        await self.change_setting(ctx, "FG.DSAutoPause", value)
-
-    @set.command(name="save_interval")
-    async def save_interval(self, ctx, value):
-        """Auto save interval"""
-        await self.change_setting(ctx, "FG.AutosaveInterval", value)
-
-    @set.command(name="restart_time")
-    async def restart_time(self, ctx, value):
-        """Server restart time"""
-        await self.change_setting(ctx, "FG.ServerRestartTimeSlot", value)
-
-    @set.command(name="gameplay_data")
-    async def gameplay_data(self, ctx, value):
-        """Send Gameplay Data"""
-        await self.change_setting(ctx, "FG.SendGameplayData", value)
-
-    @set.command(name="network_quality")
-    async def network_quality(self, ctx, value):
-        """Set network quality"""
-        await self.change_setting(ctx, "FG.NetworkQuality", value)
+        api = self.api
+        print(f"change autosave requested {value}")
+        new_settings = json.dumps({"FG.DSAutoSaveOnDisconnect": value})
+        print(f"New settings: {new_settings}")
+        if api.apply_server_options(new_settings).success:
+            await ctx.send(f"I changed the value of **Auto Save** to **{value}**")
+        else:
+            await ctx.send("Could not change setting")
 
     async def change_setting(self, ctx, setting, value):
         api = self.api
-        try:
-            api.apply_server_options({setting: value})
-        except:
-            await ctx.send("Could not change setting")
+        payload = {setting: value}
+        print(f"Payload: {payload}")
+        if api.apply_server_options(payload).success:
+            await ctx.send(f"I changed the value of **{setting}** to **{value}**")
         else:
-            await ctx.send(
-                f"I changed the value of **{self.get_friendly_name(setting)}** to **{value}**"
-            )
+            await ctx.send("Could not change setting")
 
     async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
         # Define Embed
