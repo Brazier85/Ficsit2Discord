@@ -200,7 +200,11 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             colour=color,
             timestamp=datetime.datetime.now(),
         )
-        embed.set_author(name="Ficsit2Discord Bot", icon_url=bot_logo)
+        embed.set_author(
+            name="Ficsit2Discord Bot",
+            icon_url=bot_logo,
+            url="https://github.com/Brazier85/Ficsit2Discord",
+        )
         embed.set_thumbnail(url=bot_logo)
         embed.set_footer(text="Ficsit2Discord Bot")
         return embed
