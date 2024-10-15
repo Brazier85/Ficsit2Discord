@@ -126,8 +126,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="Send Gameplay Data", value=f"{gameplay_data}")
         embed.add_field(name="Network Quality", value=f"{network_quality}", inline=True)
 
-        # Add button
-        view = SettingsView(self.api)
+        # Send the embed with the button to open the modal
+        view = SettingsView(self.api)  # Create the view with the button
         await ctx.send(embed=embed, view=view)
 
     async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
@@ -143,35 +143,46 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         return embed
 
 
-# Modal to change the server settings
+# View with a button to open the modal
+class SettingsView(discord.ui.View):
+    def __init__(self, api):
+        super().__init__(timeout=None)
+        self.api = api
+
+    @discord.ui.button(label="Change Settings", style=discord.ButtonStyle.primary)
+    async def change_settings_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        """Button that opens the settings change modal"""
+        modal = SettingsModal(self.api)  # Create the modal
+        await interaction.response.send_modal(modal)  # Send the modal to the user
+
+
 class SettingsModal(discord.ui.Modal):
     def __init__(self, api):
         super().__init__(title="Change Server Settings")
 
-        # Store API reference to fetch and save settings
+        # Store API reference
         self.api = api
         settings = self.api.get_server_options().data["serverOptions"]
 
-        # Add dropdown (Select) inputs for boolean (True/False) values
-        self.auto_pause = discord.ui.Select(
-            placeholder=f"Auto Pause (currently: {settings['FG.DSAutoPause']})",
-            options=[
-                discord.SelectOption(label="True", value="True"),
-                discord.SelectOption(label="False", value="False"),
-            ],
+        # Add text input for Auto Pause (expecting user to type True or False)
+        self.auto_pause = discord.ui.TextInput(
+            label="Auto Pause (True/False)",
+            placeholder=f"{settings['FG.DSAutoPause']}",
+            required=True,
         )
         self.add_item(self.auto_pause)
 
-        self.auto_save = discord.ui.Select(
-            placeholder=f"Auto Save (currently: {settings['FG.DSAutoSaveOnDisconnect']})",
-            options=[
-                discord.SelectOption(label="True", value="True"),
-                discord.SelectOption(label="False", value="False"),
-            ],
+        # Add text input for Auto Save (expecting user to type True or False)
+        self.auto_save = discord.ui.TextInput(
+            label="Auto Save (True/False)",
+            placeholder=f"{settings['FG.DSAutoSaveOnDisconnect']}",
+            required=True,
         )
         self.add_item(self.auto_save)
 
-        # Add text inputs for other settings
+        # Add text input for Save Interval
         self.save_interval = discord.ui.TextInput(
             label="Save Interval",
             placeholder=f"{settings['FG.AutosaveInterval']}",
@@ -179,6 +190,7 @@ class SettingsModal(discord.ui.Modal):
         )
         self.add_item(self.save_interval)
 
+        # Add text input for Restart Time
         self.restart_time = discord.ui.TextInput(
             label="Restart Time",
             placeholder=f"{settings['FG.ServerRestartTimeSlot']}",
@@ -186,24 +198,31 @@ class SettingsModal(discord.ui.Modal):
         )
         self.add_item(self.restart_time)
 
-        self.gameplay_data = discord.ui.Select(
-            placeholder=f"Send Gameplay Data (currently: {settings['FG.SendGameplayData']})",
-            options=[
-                discord.SelectOption(label="True", value="True"),
-                discord.SelectOption(label="False", value="False"),
-            ],
+        # Add text input for Send Gameplay Data (True/False)
+        self.gameplay_data = discord.ui.TextInput(
+            label="Send Gameplay Data (True/False)",
+            placeholder=f"{settings['FG.SendGameplayData']}",
+            required=True,
         )
         self.add_item(self.gameplay_data)
 
+        # Add text input for Network Quality
+        self.network_quality = discord.ui.TextInput(
+            label="Network Quality",
+            placeholder=f"{settings['FG.NetworkQuality']}",
+            required=True,
+        )
+        self.add_item(self.network_quality)
+
     # Function triggered when the modal is submitted
     async def on_submit(self, interaction: discord.Interaction):
-        # Get the selected values from the modal
+        # Convert text input values for boolean fields
         new_settings = {
-            "FG.DSAutoPause": self.auto_pause.values[0] == "True",
-            "FG.DSAutoSaveOnDisconnect": self.auto_save.values[0] == "True",
+            "FG.DSAutoPause": self.auto_pause.value.lower() == "true",
+            "FG.DSAutoSaveOnDisconnect": self.auto_save.value.lower() == "true",
             "FG.AutosaveInterval": self.save_interval.value,
             "FG.ServerRestartTimeSlot": self.restart_time.value,
-            "FG.SendGameplayData": self.gameplay_data.values[0] == "True",
+            "FG.SendGameplayData": self.gameplay_data.value.lower() == "true",
             "FG.NetworkQuality": self.network_quality.value,
         }
 
@@ -214,22 +233,6 @@ class SettingsModal(discord.ui.Modal):
         await interaction.response.send_message(
             "Settings have been updated!", ephemeral=True
         )
-
-
-# A view that includes the button for opening the modal
-class SettingsView(discord.ui.View):
-    def __init__(self, api):
-        super().__init__(timeout=None)
-        self.api = api
-
-    # Define a button to open the modal for changing settings
-    @discord.ui.button(label="Change Settings", style=discord.ButtonStyle.primary)
-    async def change_settings_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        """Button that opens the settings change modal"""
-        modal = SettingsModal(self.api)  # Create the modal
-        await interaction.response.send_modal(modal)  # Send the modal to the user
 
 
 async def setup(bot):
