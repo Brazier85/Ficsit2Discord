@@ -127,17 +127,17 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="Network Quality", value=f"{network_quality}", inline=True)
         await ctx.send(embed=embed)
 
-    async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
-        # Define Embed
-        embed = discord.Embed(
-            title=title,
-            colour=color,
-            timestamp=datetime.datetime.now(),
-        )
-        embed.set_author(name="Ficsit2Discord Bot", icon_url=bot_logo)
-        embed.set_thumbnail(url=bot_logo)
-        embed.set_footer(text="Ficsit2Discord Bot")
-        return embed
+    # async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
+    # Define Embed
+    # embed = discord.Embed(
+    # title=title,
+    # colour=color,
+    # timestamp=datetime.datetime.now(),
+    # )
+    # embed.set_author(name="Ficsit2Discord Bot", icon_url=bot_logo)
+    # embed.set_thumbnail(url=bot_logo)
+    # embed.set_footer(text="Ficsit2Discord Bot")
+    # return embed
 
 
 async def setup(bot):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import datetime
 import os
 import sys
 
@@ -22,6 +23,7 @@ SF_SERVER_NAME = os.getenv("SF_SERVER_NAME")
 
 # Define global variables
 api = ""
+bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 initial_extensions = ["cogs.satisfactory"]
 
 intents = discord.Intents.default()
@@ -64,6 +66,19 @@ async def on_command_error(ctx, error):
         await ctx.send(
             "You do not have the correct role for this command or it does not exist!"
         )
+
+
+async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
+    # Define Embed
+    embed = discord.Embed(
+        title=title,
+        colour=color,
+        timestamp=datetime.datetime.now(),
+    )
+    embed.set_author(name="Ficsit2Discord Bot", icon_url=bot_logo)
+    embed.set_thumbnail(url=bot_logo)
+    embed.set_footer(text="Ficsit2Discord Bot")
+    return embed
 
 
 # Loading cogs into the bot
