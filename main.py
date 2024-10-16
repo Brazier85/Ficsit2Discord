@@ -92,10 +92,10 @@ async def on_command_error(ctx, error):
         traceback.print_exception(
             type(error), error, error.__traceback__, file=sys.stderr
         )
-        print(f"Ignoring exception in command {ctx}!")
+        print(f"Ignoring exception in command {ctx} | !")
 
 
-@commands.command(pass_context=True)
+@bot.command(pass_context=True)
 @commands.is_owner()
 async def create_role(self, ctx):
     role_name = "Ficsit2Discord Admin"
