@@ -51,7 +51,7 @@ bot = commands.Bot(
 async def on_ready():
     await load_cogs()
     print(
-        f"Logged in as: {bot.user.name} - {bot.user.id}\nVersion; {discord.__version__}\n"
+        f"Logged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n"
     )
 
 
@@ -95,9 +95,9 @@ async def on_command_error(ctx, error):
         print(f"Ignoring exception in command {ctx} | !")
 
 
-@bot.command(pass_context=True)
-@commands.is_owner()
-async def create_role(self, ctx):
+@bot.command(name="create_role")
+@bot.commands.is_owner()
+async def create_role(ctx):
     role_name = "Ficsit2Discord Admin"
     guild = ctx.get_guild(DC_GUILD)
     try:
