@@ -17,6 +17,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         self.bot = bot
         self.api = self.bot.api
         self.servername = self.bot.server
+        self.admin_role = self.bot.dc_sf_admin_role
 
     @commands.group()
     async def sf(self, ctx):
@@ -153,6 +154,38 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             )
 
         await ctx.send(embed=embed)
+
+    @sf.command(name="add_bot_user")
+    @commands.is_owner()
+    async def add_bot_user(self, ctx, member: discord.Member):
+        """Add user to bot admin role"""
+        guild = ctx.guild
+        admin_role = self.admin_role
+        # Check if role exists
+        if discord.utils.get(guild.roles, name=admin_role) is not None:
+            print(f"Role `{admin_role}` already exists.")
+        else:
+            # create role
+            try:
+                await guild.create_role(name=admin_role, hoist=True)
+            except Exception as e:
+                print(e)
+                await ctx.send(f"Could not create role `{admin_role}`.")
+                return
+            else:
+                print(f"Role {admin_role} created")
+                await ctx.send(f"I created role `{admin_role}`.")
+
+        # Add user to role
+        if discord.utils.get(guild.roles, name=admin_role) is not None:
+            try:
+                await member.add_roles(discord.utils.get(guild.roles, name=admin_role))
+            except Exception as e:
+                print(e)
+                await ctx.send(f"Could not add `{member}` role `{admin_role}`.")
+            else:
+                print(f"@{member} added to role {admin_role} created")
+                await ctx.send(f"I added {member.mention} to role `{admin_role}`.")
 
     @commands.has_role("Ficsit2Discord")
     @sf.group()
