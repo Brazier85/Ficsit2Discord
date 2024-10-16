@@ -31,7 +31,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if await self.save(ctx):
             try:
                 api.shutdown()
-            except:
+            except Exception as err:
+                print(f"Unexpected {err=}, {type(err)=}")
                 print("Error on shutdown!")
             else:
                 embed = await self.create_embed(title="Server Successfully stopped!")
@@ -64,7 +65,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         save_path = f"./files/savegames/{save_filename}"
         try:
             api.download_save_game(save_name, save_path)
-        except:
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}")
             print("Could not download save game")
         else:
             file = discord.File(save_path)
@@ -82,7 +84,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             try:
                 await ctx.send(file=file, embed=embed)
                 await msg.delete()
-            except:
+            except Exception as err:
+                print(f"Unexpected {err=}, {type(err)=}")
                 print("Error sending file")
 
     @sf.command(name="state")
@@ -136,7 +139,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
         for param, value in current_settings.items():
-            print(f"Mapper: { icon_mapper.get(value, value) }")
             embed.add_field(
                 name=settings_mapper.get(param, param),
                 value=icon_mapper.get(value, value),
@@ -185,7 +187,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         api = self.api
         try:
             api.apply_server_options({setting: value})
-        except:
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=}")
             await ctx.send("Could not change setting")
         else:
             await ctx.send(
