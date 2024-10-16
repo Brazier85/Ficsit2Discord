@@ -102,16 +102,18 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         paused = current_state["isGamePaused"]
         health = current_health
         if health == "healthy":
-            icon = ":green_circle:"
             color = 0x00F51D
         else:
-            icon = ":yellow_circle"
             color = 0xFFF700
 
         # Define Embed
         embed = await self.create_embed(color=color, title=f"{self.servername} Status")
 
-        embed.add_field(name="", value=f"{icon} Server is **{health}**", inline=False)
+        embed.add_field(
+            name="",
+            value=f"{icon_mapper.get(health, health)} Server is **{health}**",
+            inline=False,
+        )
         embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
         embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
         embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
