@@ -19,6 +19,6 @@ state_mapper = {
 }
 
 icon_mapper = {
-    "True": ":white_check_mark",
+    "True": ":white_check_mark:",
     "False": ":x:",
 }
