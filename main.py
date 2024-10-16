@@ -100,13 +100,17 @@ async def on_command_error(ctx, error):
 async def create_role(ctx):
     role_name = "Ficsit2Discord"
     guild = ctx.guild
-    try:
-        await guild.create_role(name=role_name, hoist=True)
-    except Exception as e:
-        print(e)
+    if role_name in ctx.guild.roles["name"]:
+        await ctx.send(f"Role `{role_name}` already exists.")
     else:
-        print(f"Role {role_name} created")
-        await ctx.send(f"I created the role `{role_name}`.")
+        try:
+            await guild.create_role(name=role_name, hoist=True)
+        except Exception as e:
+            print(e)
+            await ctx.send(f"Could not create role `{role_name}`.")
+        else:
+            print(f"Role {role_name} created")
+            await ctx.send(f"I created role `{role_name}`.")
 
 
 # Loading cogs into the bot
