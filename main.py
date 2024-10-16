@@ -15,6 +15,7 @@ from pyfactorybridge import API
 # Load Variables from env file
 load_dotenv()
 DC_TOKEN = os.getenv("DISCORD_TOKEN", "")
+DC_GUILD = os.getenv("DISCORD_GUILD")
 DC_OWNER = os.getenv("DISCORD_BOT_OWNER", "")
 SF_IP = os.getenv("SF_IP", "127.0.0.1")
 SF_PORT = os.getenv("SF_PORT", "7777")
@@ -50,7 +51,7 @@ bot = commands.Bot(
 async def on_ready():
     await load_cogs()
     print(
-        f"Logged in as: {bot.user.name} - {bot.user.id}\nVersion; {discord.__version__}\n"
+        f"Logged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n"
     )
 
 
@@ -91,7 +92,25 @@ async def on_command_error(ctx, error):
         traceback.print_exception(
             type(error), error, error.__traceback__, file=sys.stderr
         )
-        print(f"Ignoring exception in command {ctx.commands.context.command}!")
+        print(f"Ignoring exception in command {ctx} | !")
+
+
+@bot.command(name="create_role")
+@commands.is_owner()
+async def create_role(ctx):
+    role_name = "Ficsit2Discord"
+    guild = ctx.guild
+    if role_name in ctx.guild.roles["name"]:
+        await ctx.send(f"Role `{role_name}` already exists.")
+    else:
+        try:
+            await guild.create_role(name=role_name, hoist=True)
+        except Exception as e:
+            print(e)
+            await ctx.send(f"Could not create role `{role_name}`.")
+        else:
+            print(f"Role {role_name} created")
+            await ctx.send(f"I created role `{role_name}`.")
 
 
 # Loading cogs into the bot

@@ -24,6 +24,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send("Command not found. Use `!help sf`")
 
+    @commands.has_role("Ficsit2Discord")
     @sf.command(name="restart")
     async def restart(self, ctx):
         """This command will save the game an then restart the server."""
@@ -46,6 +47,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         else:
             await ctx.send("I could not save the game! No restart possible!")
 
+    @commands.has_role("Ficsit2Discord")
     @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
         """This command will save the game"""
@@ -152,6 +154,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
+    @commands.has_role("Ficsit2Discord")
     @sf.group()
     async def set(self, ctx):
         """Change server settings"""
