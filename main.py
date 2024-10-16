@@ -92,7 +92,7 @@ async def on_command_error(ctx, error):
         traceback.print_exception(
             type(error), error, error.__traceback__, file=sys.stderr
         )
-        print(f"Ignoring exception in command {ctx.commands.context.command}!")
+        print(f"Ignoring exception in command {ctx.command.context.command}!")
 
 
 @commands.command(pass_context=True)
