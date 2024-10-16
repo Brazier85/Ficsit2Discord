@@ -47,6 +47,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         else:
             await ctx.send("I could not save the game! No restart possible!")
 
+    @commands.has_role("Ficsit2Discord")
     @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
         """This command will save the game"""
