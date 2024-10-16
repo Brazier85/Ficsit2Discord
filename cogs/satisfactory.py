@@ -116,7 +116,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
         embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
         embed.add_field(
-            name="Game paused", value=f"{icon_mapper.get(paused, paused)}", inline=True
+            name="Game paused",
+            value=f"{icon_mapper.get(str(paused), paused)}",
+            inline=True,
         )
         embed.add_field(name="Tech Tier", value=f"{tech_tier}", inline=True)
         embed.add_field(name="Session Name", value=f"{session_name}", inline=True)
@@ -132,9 +134,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
         for param, value in current_settings.items():
+            print(f"Mapper: { icon_mapper.get(str(value), value)) }"
             embed.add_field(
                 name=settings_mapper.get(param, param),
-                value=icon_mapper(value, value),
+                value=icon_mapper.get(str(value), value),
                 inline=True,
             )
 
