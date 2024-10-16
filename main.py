@@ -99,8 +99,8 @@ async def on_command_error(ctx, error):
 @commands.is_owner()
 async def create_role(ctx):
     role_name = "Ficsit2Discord Admin"
-    guild = bot.guild.get_guild(DC_GUILD)
-    current_roles = bot.guild.fetch_roles()
+    guild = ctx.guild
+    current_roles = guild.fetch_roles()
     if role_name in current_roles:
         print("Role exists!")
     else:
