@@ -94,6 +94,13 @@ async def on_command_error(ctx, error):
         print(f"Ignoring exception in command {ctx.commands.context.command}!")
 
 
+@bot.command
+@commands.is_owner()
+async def create_role(ctx):
+    role = discord.utils.get(ctx.guild.roles, name="Facsit2Discord Admin")
+    await bot.add_roles(role)
+
+
 # Loading cogs into the bot
 # see initial_extensions variable
 async def load_cogs():
