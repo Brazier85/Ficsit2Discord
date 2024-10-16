@@ -96,7 +96,7 @@ async def on_command_error(ctx, error):
 
 
 @bot.command(name="create_role")
-@bot.commands.is_owner()
+@commands.is_owner()
 async def create_role(ctx):
     role_name = "Ficsit2Discord Admin"
     guild = ctx.get_guild(DC_GUILD)
