@@ -154,6 +154,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
+    @commands.has_role("Ficsit2Discord")
     @sf.group()
     async def set(self, ctx):
         """Change server settings"""
