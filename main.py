@@ -99,7 +99,7 @@ async def on_command_error(ctx, error):
 @commands.is_owner()
 async def create_role(ctx):
     role_name = "Ficsit2Discord Admin"
-    guild = ctx.get_guild(DC_GUILD)
+    guild = bot.get_guild(DC_GUILD)
     try:
         await guild.create_role(name=role_name)
     except Exception as e:
