@@ -134,7 +134,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
         for param, value in current_settings.items():
-            print(f"Mapper: { icon_mapper.get(str(value), value)) }"
+            print(f"Mapper: { icon_mapper.get(str(value), value) }")
             embed.add_field(
                 name=settings_mapper.get(param, param),
                 value=icon_mapper.get(str(value), value),
