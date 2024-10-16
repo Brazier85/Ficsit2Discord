@@ -15,6 +15,7 @@ from pyfactorybridge import API
 # Load Variables from env file
 load_dotenv()
 DC_TOKEN = os.getenv("DISCORD_TOKEN", "")
+DC_GUILD = os.getenv("DISCORD_GUILD")
 DC_OWNER = os.getenv("DISCORD_BOT_OWNER", "")
 SF_IP = os.getenv("SF_IP", "127.0.0.1")
 SF_PORT = os.getenv("SF_PORT", "7777")
@@ -94,11 +95,19 @@ async def on_command_error(ctx, error):
         print(f"Ignoring exception in command {ctx.commands.context.command}!")
 
 
-@bot.command
+@bot.command(pass_context=True)
 @commands.is_owner()
 async def create_role(ctx):
-    role = discord.utils.get(ctx.guild.roles, name="Facsit2Discord Admin")
-    await bot.add_roles(role)
+    role_name = "Ficsit2Discord Admin"
+    guild = ctx.get_guild(DC_GUILD)
+    try:
+        await guild.create_role(name=role_name)
+    except Exception as e:
+        print(e)
+    else:
+        # role = discord.utils.get(ctx.guild.roles, name=role_name)
+        # await bot.add_roles(role)
+        print(f"Role {role_name} created")
 
 
 # Loading cogs into the bot
