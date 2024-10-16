@@ -105,9 +105,8 @@ async def create_role(ctx):
     except Exception as e:
         print(e)
     else:
-        # role = discord.utils.get(ctx.guild.roles, name=role_name)
-        # await bot.add_roles(role)
         print(f"Role {role_name} created")
+        await ctx.send(f"I created the role `{role_name}`.")
 
 
 # Loading cogs into the bot
