@@ -24,6 +24,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send("Command not found. Use `!help sf`")
 
+    @commands.has_role("Ficsit2Discord")
     @sf.command(name="restart")
     async def restart(self, ctx):
         """This command will save the game an then restart the server."""
