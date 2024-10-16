@@ -4,17 +4,10 @@ import discord
 from discord.ext import commands
 from pyfactorybridge.exceptions import SaveGameFailed
 
-bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
+# Mappers
+from data.mappers import icon_mapper, settings_mapper
 
-# Dictionary mapping technical parameters to human-friendly names
-parameter_mapping = {
-    "FG.DSAutoPause": "Auto Pause",
-    "FG.DSAutoSaveOnDisconnect": "Save on DC",
-    "FG.AutosaveInterval": "Autosave Interval",
-    "FG.ServerRestartTimeSlot": "Server Restart Time",
-    "FG.SendGameplayData": "Send Gameplay Data",
-    "FG.NetworkQuality": "Network Quality",
-}
+bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
@@ -109,27 +102,30 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         paused = current_state["isGamePaused"]
         health = current_health
         if health == "healthy":
-            icon = ":green_circle:"
             color = 0x00F51D
         else:
-            icon = ":yellow_circle"
             color = 0xFFF700
 
         # Define Embed
         embed = await self.create_embed(color=color, title=f"{self.servername} Status")
 
-        embed.add_field(name="", value=f"{icon} Server is **{health}**", inline=False)
+        embed.add_field(
+            name="",
+            value=f"{icon_mapper.get(health, health)} Server is **{health}**",
+            inline=False,
+        )
         embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
         embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
         embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
-        embed.add_field(name="Game paused", value=f"{paused}", inline=True)
+        embed.add_field(
+            name="Game paused",
+            value=f"{icon_mapper.get(str(paused), paused)}",
+            inline=True,
+        )
         embed.add_field(name="Tech Tier", value=f"{tech_tier}", inline=True)
         embed.add_field(name="Session Name", value=f"{session_name}", inline=True)
 
         await ctx.send(embed=embed)
-
-    async def get_friendly_name(self, parameter):
-        return parameter_mapping.get(parameter, parameter)
 
     @sf.command(name="settings")
     async def options(self, ctx):
@@ -140,9 +136,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         # Define Embed
         embed = await self.create_embed(title=f"{self.servername} Settings")
         for param, value in current_settings.items():
+            print(f"Mapper: { icon_mapper.get(value, value) }")
             embed.add_field(
-                name=parameter_mapping.get(param, param),
-                value=value,
+                name=settings_mapper.get(param, param),
+                value=icon_mapper.get(value, value),
                 inline=True,
             )
 
@@ -182,7 +179,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @set.command(name="network_quality")
     async def network_quality(self, ctx, value):
         """Set network quality"""
-        await self.change_setting(ctx, "FG.NetworkQuality", value)
+        await self.change_setting(ctx, "FG.NetworkQuality", int(value))
 
     async def change_setting(self, ctx, setting, value):
         api = self.api
@@ -192,7 +189,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             await ctx.send("Could not change setting")
         else:
             await ctx.send(
-                f"I changed the value of **{self.get_friendly_name(setting)}** to **{value}**"
+                f"I changed the value of **{settings_mapper.get(setting, setting)}** to **{value}**"
             )
 
     async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
