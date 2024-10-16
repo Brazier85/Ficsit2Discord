@@ -95,11 +95,11 @@ async def on_command_error(ctx, error):
         print(f"Ignoring exception in command {ctx.commands.context.command}!")
 
 
-@bot.command(pass_context=True)
+@commands.command(pass_context=True)
 @commands.is_owner()
-async def create_role(self):
+async def create_role(self, ctx):
     role_name = "Ficsit2Discord Admin"
-    guild = self.bot.get_guild(DC_GUILD)
+    guild = ctx.get_guild(DC_GUILD)
     try:
         await guild.create_role(name=role_name)
     except Exception as e:
