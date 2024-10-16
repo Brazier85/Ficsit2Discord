@@ -100,7 +100,7 @@ async def on_command_error(ctx, error):
 async def create_role(ctx):
     role_name = "Ficsit2Discord"
     guild = ctx.guild
-    if role_name in ctx.guild.roles["name"]:
+    if discord.utils.get(ctx.guild.roles, name=role_name) is not None:
         await ctx.send(f"Role `{role_name}` already exists.")
     else:
         try:
@@ -111,6 +111,21 @@ async def create_role(ctx):
         else:
             print(f"Role {role_name} created")
             await ctx.send(f"I created role `{role_name}`.")
+
+
+@bot.command(name="add_member")
+@commands.is_owner()
+async def add_member(ctx, member: discord.Member):
+    role_name = "Ficsit2Discord"
+    if discord.utils.get(ctx.guild.roles, name=role_name) is not None:
+        try:
+            await member.add_roles(discord.utils.get(ctx.guild.roles, name=role_name))
+        except Exception as e:
+            print(e)
+            await ctx.send(f"Could not add `{member}` role `{role_name}`.")
+        else:
+            print(f"{member} added to role {role_name} created")
+            await ctx.send(f"I added {member} to role `{role_name}`.")
 
 
 # Loading cogs into the bot
