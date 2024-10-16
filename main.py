@@ -112,7 +112,7 @@ def main():
     bot.api = API(address=f"{SF_IP}:{SF_PORT}", token=SF_TOKEN)
     bot.server = SF_SERVER_NAME
     # Login into Discord
-    bot.run(DC_TOKEN, reconnect=True, owner_id=DC_OWNER)
+    bot.run(DC_TOKEN, reconnect=True)
 
 
 if __name__ == "__main__":
