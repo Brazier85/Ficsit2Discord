@@ -34,6 +34,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             except Exception as err:
                 print(f"Unexpected {err=}, {type(err)=}")
                 print("Error on shutdown!")
+                await ctx.send("Could not shutdown the server!")
             else:
                 embed = await self.create_embed(title="Server Successfully stopped!")
                 embed.add_field(
@@ -54,6 +55,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             api.save_game(SaveName=save_name)
         except SaveGameFailed as error:
             await msg.edit(content=f":x: Could not save game: {error}")
+            return False
         else:
             await msg.edit(content=":white_check_mark: Game saved Successfully!")
             await self.download_save(ctx, msg, save_name)
@@ -64,10 +66,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         save_filename = f"{save_name}.sav"
         save_path = f"./files/savegames/{save_filename}"
         try:
+            await msg.edit(content="Downloading save game!")
             api.download_save_game(save_name, save_path)
         except Exception as err:
             print(f"Unexpected {err=}, {type(err)=}")
             print("Could not download save game")
+            await msg.edit(content="Coud not download the save game")
         else:
             file = discord.File(save_path)
 
@@ -87,6 +91,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             except Exception as err:
                 print(f"Unexpected {err=}, {type(err)=}")
                 print("Error sending file")
+                await msg.edit("Cloud not send save file to Discord!")
 
     @sf.command(name="state")
     async def state(self, ctx):
@@ -151,7 +156,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def set(self, ctx):
         """Change server settings"""
         if ctx.invoked_subcommand is None:
-            await ctx.send("Command not found. Use `!help sf`")
+            await ctx.send("Command not found. Use `!help sf set`")
 
     @set.command(name="auto_save")
     async def auto_save(self, ctx, value):
