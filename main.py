@@ -95,7 +95,6 @@ async def on_command_error(ctx, error):
         )
         print(f"Ignoring exception in command {ctx} | !")
 
-
 # Loading cogs into the bot
 # see initial_extensions variable
 async def load_cogs():
