@@ -179,7 +179,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @set.command(name="network_quality")
     async def network_quality(self, ctx, value):
         """Set network quality"""
-        await self.change_setting(ctx, "FG.NetworkQuality", value)
+        await self.change_setting(ctx, "FG.NetworkQuality", int(value))
 
     async def change_setting(self, ctx, setting, value):
         api = self.api
