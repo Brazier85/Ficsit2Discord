@@ -155,8 +155,14 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
-    @sf.command(name="add_bot_user")
-    @commands.is_owner()
+    @commands.is_owner
+    @sf.group()
+    async def user(self, ctx):
+        """Manage bot access rights"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Commadn not found. Use `!help sf user`")
+
+    @user.command(name="add")
     async def add_bot_user(self, ctx, member: discord.Member):
         """Add user to bot admin role"""
         guild = ctx.guild
@@ -186,6 +192,31 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             else:
                 print(f"@{member} added to role {admin_role} created")
                 await ctx.send(f"I added {member.mention} to role `{admin_role}`.")
+
+    @user.command(name="remove")
+    async def remove_bot_user(self, ctx, member: discord.Member):
+        """Add user to bot admin role"""
+        guild = ctx.guild
+        admin_role = self.admin_role
+        # Check if role exists
+        if discord.utils.get(guild.roles, name=admin_role) is not None:
+            print(f"Role `{admin_role}` already exists.")
+        else:
+            print(f"Role {admin_role} does not exist!")
+            await ctx.send(f"There are no users configured in role `{admin_role}`.")
+
+        # Remove user from role
+        if discord.utils.get(guild.roles, name=admin_role) is not None:
+            try:
+                await member.remove_roles(
+                    discord.utils.get(guild.roles, name=admin_role)
+                )
+            except Exception as e:
+                print(e)
+                await ctx.send(f"Could not remove `{member}` from role `{admin_role}`.")
+            else:
+                print(f"@{member} removed from role {admin_role}")
+                await ctx.send(f"I removed {member.mention} from role `{admin_role}`.")
 
     @commands.has_role("Ficsit2Discord")
     @sf.group()
