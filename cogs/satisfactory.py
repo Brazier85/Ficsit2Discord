@@ -195,7 +195,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     @user.command(name="remove")
     async def remove_bot_user(self, ctx, member: discord.Member):
-        """Add user to bot admin role"""
+        """Remove user from bot admin role"""
         guild = ctx.guild
         admin_role = self.admin_role
         # Check if role exists
