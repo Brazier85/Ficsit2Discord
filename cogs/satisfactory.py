@@ -157,16 +157,16 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     @commands.is_owner
     @sf.command(name="console")
-    async def console(self, ctx, *, command):
+    async def console(self, ctx, *, cmd):
         api = self.api
         try:
-            result = api.run_command(command)
+            result = api.run_command(cmd)
         except Exception as e:
             print(e)
-            await ctx.send(f"Cloud not execute the command: {command}")
+            await ctx.send(f"Cloud not execute the command: {cmd}")
             await ctx.send(e)
         else:
-            await ctx.send(f"Command `{command}` executed!")
+            await ctx.send(f"Command `{cmd}` executed!")
             await ctx.send(f"Result: {result}")
 
     @commands.is_owner
