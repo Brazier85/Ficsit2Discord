@@ -156,6 +156,20 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         await ctx.send(embed=embed)
 
     @commands.is_owner
+    @sf.command(name="command")
+    async def command(self, ctx, *, command):
+        api = self.api
+        try:
+            result = api.run_command(command)
+        except Exception as e:
+            print(e)
+            await ctx.send(f"Cloud not execute the command: {command}")
+            await ctx.send(e)
+        else:
+            await ctx.send(f"Command `{command}` executed!")
+            await ctx.send(f"Result: {result}")
+
+    @commands.is_owner
     @sf.group()
     async def user(self, ctx):
         """Manage bot access rights"""
@@ -200,7 +214,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         admin_role = self.admin_role
         # Check if role exists
         if discord.utils.get(guild.roles, name=admin_role) is not None:
-            print(f"Role `{admin_role}` already exists.")
+            print(f"Role {admin_role} already exists.")
         else:
             print(f"Role {admin_role} does not exist!")
             await ctx.send(f"There are no users configured in role `{admin_role}`.")
