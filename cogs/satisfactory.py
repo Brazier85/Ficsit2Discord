@@ -156,8 +156,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         await ctx.send(embed=embed)
 
     @commands.is_owner
-    @sf.command(name="command")
-    async def command(self, ctx, *, command):
+    @sf.command(name="console")
+    async def console(self, ctx, *, command):
         api = self.api
         try:
             result = api.run_command(command)
