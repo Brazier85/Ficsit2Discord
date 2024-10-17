@@ -28,7 +28,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @commands.has_role("Ficsit2Discord")
     @sf.command(name="restart")
     async def restart(self, ctx):
-        """This command will save the game an then restart the server."""
+        """Save the game and restart the server."""
         api = self.api
         if await self.save(ctx):
             try:
@@ -158,6 +158,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @commands.is_owner()
     @sf.command(name="console")
     async def console(self, ctx, *, cmd):
+        """Send a console command"""
         api = self.api
         try:
             result = api.run_command(cmd)
