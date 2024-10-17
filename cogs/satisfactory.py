@@ -155,7 +155,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         await ctx.send(embed=embed)
 
-    @commands.is_owner
+    @commands.is_owner()
     @sf.command(name="console")
     async def console(self, ctx, *, cmd):
         api = self.api
@@ -169,7 +169,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             await ctx.send(f"Command `{cmd}` executed!")
             await ctx.send(f"Result: {result}")
 
-    @commands.is_owner
+    @commands.is_owner()
     @sf.group()
     async def user(self, ctx):
         """Manage bot access rights"""
