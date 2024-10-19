@@ -280,6 +280,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """Set network quality"""
         await self.change_setting(ctx, "FG.NetworkQuality", int(value))
 
+    # Do the actual change
     async def change_setting(self, ctx, setting, value):
         api = self.api
         try:
@@ -292,6 +293,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 f"I changed the value of **{settings_mapper.get(setting, setting)}** to **{value}**"
             )
 
+    # Create a discord embed
     async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
         # Define Embed
         embed = discord.Embed(
