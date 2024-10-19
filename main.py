@@ -22,6 +22,7 @@ SF_IP = os.getenv("SF_IP", "127.0.0.1")
 SF_PORT = os.getenv("SF_PORT", "7777")
 SF_TOKEN = os.getenv("SF_TOKEN", "")
 SF_SERVER_NAME = os.getenv("SF_SERVER_NAME", "My awsome server!")
+SF_PUBLIC_ADDR = os.getenv("SF_PUBLIC_ADDR", SF_IP)
 
 # Define global variables
 api = ""
@@ -95,6 +96,7 @@ async def on_command_error(ctx, error):
         )
         print(f"Ignoring exception in command {ctx} | !")
 
+
 # Loading cogs into the bot
 # see initial_extensions variable
 async def load_cogs():
@@ -113,6 +115,7 @@ def main():
     bot.api = API(address=f"{SF_IP}:{SF_PORT}", token=SF_TOKEN)
     bot.server = SF_SERVER_NAME
     bot.dc_sf_admin_role = DC_SF_ADMIN_ROLE
+    bot.sf_public_addr = SF_PUBLIC_ADDR
     # Login into Discord
     bot.run(DC_TOKEN, reconnect=True)
 

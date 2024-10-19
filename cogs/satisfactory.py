@@ -18,6 +18,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         self.api = self.bot.api
         self.servername = self.bot.server
         self.admin_role = self.bot.dc_sf_admin_role
+        self.sf_public_addr = self.bot.sf_public_addr
 
     @commands.group()
     async def sf(self, ctx):
@@ -95,6 +96,15 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 print(f"Unexpected {err=}, {type(err)=}")
                 print("Error sending file")
                 await msg.edit("Cloud not send save file to Discord!")
+
+    @sf.command(name="connect")
+    async def sf_connect(self, ctx):
+        """Show server connection details"""
+        embed = self.create_embed(title=f"{self.servername} Details")
+
+        embed.add_field(name="Address", value=self.sf_public_addr, inline=False)
+        embed.add_field(name="Password", value="Ask a Moderator", inline=False)
+        await ctx.send(embed=embed)
 
     @sf.command(name="state")
     async def state(self, ctx):
