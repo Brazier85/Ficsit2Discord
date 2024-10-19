@@ -100,7 +100,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @sf.command(name="connect")
     async def sf_connect(self, ctx):
         """Show server connection details"""
-        embed = self.create_embed(title=f"{self.servername} Details")
+        embed = await self.create_embed(title=f"{self.servername} Details")
 
         embed.add_field(name="Address", value=self.sf_public_addr, inline=False)
         embed.add_field(name="Password", value="Ask a Moderator", inline=False)
