@@ -40,13 +40,27 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     await load_cogs()
-    await bot.tree.sync()
     print(f"Logged in as: {bot.user.name} - {bot.user.id}")
     chan_id = conf.get("DC_STATE_CHANNEL")
     channel = await bot.fetch_channel(chan_id)
     print(f"Special channel info: {channel=}")
     print(f"Version: {discord.__version__}")
     repr(bot)
+
+
+@bot.event
+async def on_guild_join(guild):
+    # Run commandy sync on bot join
+    print(f"Bot joined {guild}")
+    await bot.tree.sync()
+
+
+@bot.command(name="sync")
+@commands.is_owner()
+async def _sync(self, ctx):
+    """Sync all bot commands to the current server"""
+    await bot.tree.sync()
+    await ctx.send("Commands synced!")
 
 
 # When something goes wrong
@@ -80,6 +94,9 @@ async def on_command_error(ctx, error):
             await ctx.author.send(f"{ctx.command} can not be used in Private Messages.")
         except discord.HTTPException:
             pass
+    # Ignore command not found
+    elif isinstance(error, commands.CommandNotFound):
+        pass
     # All other Errors not returned come here. And we can just print the default TraceBack.
     else:
         print("Ignoring exception in command {}:".format(ctx.command), file=sys.stderr)
