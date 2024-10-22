@@ -24,6 +24,23 @@ bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/head
 conf = ConfigManager()
 heart_beats = 0
 
+utc = datetime.timezone.utc
+
+times = [
+    datetime.time(hour=0, tzinfo=utc),
+    datetime.time(hour=2, tzinfo=utc),
+    datetime.time(hour=4, tzinfo=utc),
+    datetime.time(hour=6, tzinfo=utc),
+    datetime.time(hour=8, tzinfo=utc),
+    datetime.time(hour=10, tzinfo=utc),
+    datetime.time(hour=12, tzinfo=utc),
+    datetime.time(hour=14, tzinfo=utc),
+    datetime.time(hour=16, tzinfo=utc),
+    datetime.time(hour=18, tzinfo=utc),
+    datetime.time(hour=20, tzinfo=utc),
+    datetime.time(hour=22, tzinfo=utc),
+]
+
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     """**!sf <command>**\nEverything Satisfactory related."""
@@ -54,6 +71,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         chan_id = conf.get("DC_STATE_CHANNEL")
         channel = await self.bot.fetch_channel(chan_id)
         await channel.edit(name=f"satisfactory-{prefix_icon}")
+
+    @tasks.loop(time=times)
+    async def auto_save(self):
+        await self.save
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
