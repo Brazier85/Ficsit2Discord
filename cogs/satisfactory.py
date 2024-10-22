@@ -1,13 +1,28 @@
 import datetime
+import socket
+import struct
+import sys
+import time
 
 import discord
-from discord.ext import commands
+import numpy as np
+from discord.ext import commands, tasks
 from pyfactorybridge.exceptions import SaveGameFailed
 
+from data.config import ConfigManager
+
 # Mappers
-from data.mappers import icon_mapper, settings_mapper
+from data.mappers import (
+    icon_mapper,
+    messageTypes,
+    serverStates,
+    serverSubStates,
+    settings_mapper,
+)
 
 bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
+conf = ConfigManager()
+heart_beats = 0
 
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
@@ -16,17 +31,37 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     def __init__(self, bot):
         self.bot = bot
         self.api = self.bot.api
-        self.servername = self.bot.server
-        self.admin_role = self.bot.dc_sf_admin_role
-        self.sf_public_addr = self.bot.sf_public_addr
+        self.serverStates = serverStates
+        self.messageTypes = messageTypes
+        self.serverSubStates = serverSubStates
+        self.protocolVersion = 1
+        self.servername = conf.get("SF_SERVER_NAME")
+        self.sf_server_monitor.start()
 
-    @commands.group()
+    @tasks.loop(seconds=30)
+    async def sf_server_monitor(self):
+        global heart_beats
+        heart_beats += 1
+        print(f"heartbeat: {heart_beats:4}")
+        udpstatus = self.probe_udp(conf)
+        server_state = self.serverStates[udpstatus["ServerState"]]
+        print(f"\tUDP Probe complete.  {server_state=}")
+        # server_name = udpstatus['ServerName']
+        if server_state != "Offline":
+            prefix_icon = "✅"
+        else:
+            prefix_icon = "❌"
+        chan_id = conf.get("DC_STATE_CHANNEL")
+        channel = await self.bot.fetch_channel(chan_id)
+        await channel.edit(name=f"satisfactory-{prefix_icon}")
+
+    @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
         """Everything related to Satisfactory Servers"""
         if ctx.invoked_subcommand is None:
             await ctx.send("Command not found. Use `!help sf`")
 
-    @commands.has_role("Ficsit2Discord")
+    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
     @sf.command(name="restart")
     async def restart(self, ctx):
         """Save the game and restart the server."""
@@ -49,7 +84,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         else:
             await ctx.send("I could not save the game! No restart possible!")
 
-    @commands.has_role("Ficsit2Discord")
+    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
     @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord"):
         """This command will save the game"""
@@ -102,7 +137,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         """Show server connection details"""
         embed = await self.create_embed(title=f"{self.servername} Details")
 
-        embed.add_field(name="Address", value=self.sf_public_addr, inline=False)
+        embed.add_field(name="Address", value=conf.get("SF_PUBLIC_ADDR"), inline=False)
         embed.add_field(name="Password", value="Ask a Moderator", inline=False)
         await ctx.send(embed=embed)
 
@@ -243,7 +278,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 print(f"@{member} removed from role {admin_role}")
                 await ctx.send(f"I removed {member.mention} from role `{admin_role}`.")
 
-    @commands.has_role("Ficsit2Discord")
+    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
     @sf.group()
     async def set(self, ctx):
         """Change server settings"""
@@ -310,6 +345,118 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         embed.set_footer(text="Ficsit2Discord Bot")
         return embed
 
+    def probeLightAPI(self, conf: ConfigManager):
+        msgID = bytes.fromhex("D5F6")  # Protocol Magic identifying the UDP Protocol
+        msgType = np.uint8(
+            self.messageTypes["PollServerState"]
+        )  # Identifier for 'Poll Server State' message
+        msgProtocol = np.uint8(
+            self.protocolVersion
+        )  # Identifier for protocol version identification
+        msgData = np.uint64(
+            time.perf_counter()
+        )  # "Cookie" payload for server state query. Can be anything.
+        msgEnds = np.uint8(1)  # End of Message marker
+
+        srvAddress = conf.get("SF_IP")
+        srvPort = int(conf.get("SF_PORT"))
+        bufferSize = 1024
+        msgToServer = msgID + msgType + msgProtocol + msgData + msgEnds
+        msgFromServer = None
+
+        time_sent = time.perf_counter()
+        with socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM
+        ) as UDPClientSocket:
+            UDPClientSocket.sendto(msgToServer, (srvAddress, srvPort))
+            UDPClientSocket.settimeout(0.7)
+            try:
+                msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+            except socket.timeout:
+                return (None, None)
+        time_recv = time.perf_counter()
+        return msgFromServer[0], time_recv - time_sent
+
+    def probe_udp(self, conf: ConfigManager):
+        host = conf.get("SF_IP")
+        port = conf.get("SF_PORT")
+        udp_probe = self.probeLightAPI(conf)
+        if udp_probe == (None, None):
+            return {"ServerState": 0, "ServerName": "X", "ServerNetCL": "None"}
+        else:
+            udp_result = self.parseLightAPIResponse(udp_probe[0])
+            return udp_result
+
+    def parseLightAPIResponse(self, data=None):
+        if not data:
+            raise ValueError("parseLightAPIResponse() called with empty response.")
+        # Validate the envelope
+        validFingerprint = (
+            b"\xd5\xf6",
+            self.messageTypes["ServerStateResponse"],
+            self.protocolVersion,
+        )
+        packetFingerprint = struct.unpack("<2s B B", data[:4])
+        if not packetFingerprint == validFingerprint:
+            raise ValueError(
+                f"Unknown packet type received.  Expected {validFingerprint}; received {packetFingerprint}. "
+            )
+        packetTerminator = struct.unpack("<B", data[-1:])
+        validTerminator = (1,)
+        if not packetTerminator == validTerminator:
+            raise ValueError(
+                f"Unknown packet terminator.  Expected {validTerminator}; received {packetTerminator}. "
+            )
+        payload = data[4:-1]  # strip the envelope from the datagram
+        response = {}
+        response["Cookie"] = struct.unpack("<Q", payload[:8])[0]
+        response["ServerState"] = struct.unpack("B", payload[8:9])[0]
+        response["ServerNetCL"] = struct.unpack("<I", payload[9:13])[0]
+        response["ServerFlags"] = struct.unpack("<Q", payload[13:21])[0]
+        response["NumSubStates"] = int(struct.unpack("B", payload[21:22])[0])
+        response["SubStates"] = []
+        sub_states_offset = 22
+        if response["NumSubStates"] > 0:
+            offset_cursor = sub_states_offset
+            for _ in range(response["NumSubStates"]):
+                sub_state = {}
+                sub_state["SubStateId"] = struct.unpack(
+                    "B", payload[offset_cursor : offset_cursor + 1]
+                )[0]
+                offset_cursor += 1
+                sub_state["SubStateVersion"] = struct.unpack(
+                    "<H", payload[offset_cursor : offset_cursor + 2]
+                )[0]
+                offset_cursor += 2
+                response["SubStates"].append(sub_state)
+                sub_states_offset += 3  # Adjust based on actual sub state size
+        # Calculate server name offset once
+        server_name_length_offset = sub_states_offset
+        server_name_offset = server_name_length_offset + 2
+        response["ServerNameLength"] = struct.unpack(
+            "<H", payload[server_name_length_offset : server_name_length_offset + 2]
+        )[0]
+        raw_name = struct.unpack(
+            f'{response["ServerNameLength"]}s',
+            payload[
+                server_name_offset : server_name_offset + response["ServerNameLength"]
+            ],
+        )[0]
+        response["ServerName"] = raw_name.decode("utf-8")
+        return response
+
 
 async def setup(bot):
     await bot.add_cog(Satisfactory(bot))
+
+
+def main() -> None:
+    try:
+        raise NotImplementedError("bot_config.py should not be executed directly.")
+    except NotImplementedError as e:
+        print(f"{e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

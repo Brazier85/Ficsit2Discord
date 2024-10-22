@@ -12,6 +12,8 @@ PID_FILE="current.pid"
 
 source .venv/bin/activate
 
+pip install -r requirements.txt
+
 # Check the input parameter
 case "$1" in
 start)

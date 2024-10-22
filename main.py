@@ -1,33 +1,21 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import traceback
 
 # Imports
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
 # SF Imports
 from pyfactorybridge import API
 
-# Load Variables from env file
-load_dotenv()
-DC_TOKEN = os.getenv("DISCORD_TOKEN", "")
-DC_GUILD = os.getenv("DISCORD_GUILD")
-DC_OWNER = os.getenv("DISCORD_BOT_OWNER", "")
-DC_SF_ADMIN_ROLE = os.getenv("DISCORD_SF_ADMIN_ROLE", "Ficsit2Discord")
-SF_IP = os.getenv("SF_IP", "127.0.0.1")
-SF_PORT = os.getenv("SF_PORT", "7777")
-SF_TOKEN = os.getenv("SF_TOKEN", "")
-SF_SERVER_NAME = os.getenv("SF_SERVER_NAME", "My awsome server!")
-SF_PUBLIC_ADDR = os.getenv("SF_PUBLIC_ADDR", SF_IP)
+from data.config import ConfigManager
 
 # Define global variables
 api = ""
+conf = ConfigManager()
 initial_extensions = ["cogs.satisfactory"]
-
 intents = discord.Intents.default()
 # intents.members = True
 # intents.guilds = True
@@ -52,9 +40,13 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     await load_cogs()
-    print(
-        f"Logged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n"
-    )
+    await bot.tree.sync()
+    print(f"Logged in as: {bot.user.name} - {bot.user.id}")
+    chan_id = conf.get("DC_STATE_CHANNEL")
+    channel = await bot.fetch_channel(chan_id)
+    print(f"Special channel info: {channel=}")
+    print(f"Version: {discord.__version__}")
+    repr(bot)
 
 
 # When something goes wrong
@@ -111,13 +103,11 @@ async def load_cogs():
 
 # Main function
 def main():
-    # Connect to the Satisfactory server
-    bot.api = API(address=f"{SF_IP}:{SF_PORT}", token=SF_TOKEN)
-    bot.server = SF_SERVER_NAME
-    bot.dc_sf_admin_role = DC_SF_ADMIN_ROLE
-    bot.sf_public_addr = SF_PUBLIC_ADDR
+    bot.api = API(
+        address=f"{conf.get('SF_IP')}:{conf.get('SF_PORT')}", token=conf.get("SF_TOKEN")
+    )
     # Login into Discord
-    bot.run(DC_TOKEN, reconnect=True)
+    bot.run(conf.get("DC_TOKEN"), reconnect=True)
 
 
 if __name__ == "__main__":
