@@ -54,6 +54,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         self.protocolVersion = 1
         self.servername = conf.get("SF_SERVER_NAME")
         self.sf_server_monitor.start()
+        self.sf_auto_save.start()
 
     @tasks.loop(seconds=30)
     async def sf_server_monitor(self):
@@ -73,9 +74,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         await channel.edit(name=f"satisfactory-{prefix_icon}")
 
     @tasks.loop(time=times)
-    async def auto_save(self):
+    async def sf_auto_save(self):
         channel = await self.bot.fetch_channel(conf.get("DC_STATE_CHANNEL"))
-        await self.save(channel)
+        await self.save(ctx=channel, silent=True)
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
@@ -108,31 +109,31 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
     @sf.command(name="save")
-    async def save(self, ctx, save_name="Ficit2Discord"):
+    async def save(self, ctx, save_name="Ficit2Discord", silent=False):
         """This command will save the game"""
         api = self.api
-        msg = await ctx.send("Saving game...")
+        msg = await ctx.send("Saving game...", silent=silent)
         try:
             api.save_game(SaveName=save_name)
         except SaveGameFailed as error:
-            await msg.edit(content=f":x: Could not save game: {error}")
+            await msg.edit(content=f":x: Could not save game: {error}", silent=silent)
             return False
         else:
             await msg.edit(content=":white_check_mark: Game saved Successfully!")
-            await self.download_save(ctx, msg, save_name)
+            await self.download_save(ctx, msg, save_name, silent)
             return True
 
-    async def download_save(self, ctx, msg, save_name):
+    async def download_save(self, ctx, msg, save_name, silent=False):
         api = self.api
         save_filename = f"{save_name}.sav"
         save_path = f"./files/savegames/{save_filename}"
         try:
-            await msg.edit(content="Downloading save game!")
+            await msg.edit(content="Downloading save game!", silent=silent)
             api.download_save_game(save_name, save_path)
         except Exception as err:
             print(f"Unexpected {err=}, {type(err)=}")
             print("Could not download save game")
-            await msg.edit(content="Coud not download the save game")
+            await msg.edit(content="Coud not download the save game", silent=silent)
         else:
             file = discord.File(save_path)
 
@@ -147,12 +148,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             )
             embed.add_field(name="Save File", value=f"`{save_filename}`")
             try:
-                await ctx.send(file=file, embed=embed)
+                await ctx.send(file=file, embed=embed, silent=silent)
                 await msg.delete()
             except Exception as err:
                 print(f"Unexpected {err=}, {type(err)=}")
                 print("Error sending file")
-                await msg.edit("Cloud not send save file to Discord!")
+                await msg.edit("Cloud not send save file to Discord!", silent=silent)
 
     @sf.command(name="connect")
     async def sf_connect(self, ctx):
