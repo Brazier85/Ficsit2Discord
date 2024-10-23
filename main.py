@@ -120,9 +120,11 @@ async def load_cogs():
 
 # Main function
 def main():
+    print("Loading SF API")
     bot.api = API(
         address=f"{conf.get('SF_IP')}:{conf.get('SF_PORT')}", token=conf.get("SF_TOKEN")
     )
+    print("Discord Login")
     # Login into Discord
     bot.run(conf.get("DC_TOKEN"), reconnect=True)
 
