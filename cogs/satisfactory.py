@@ -74,7 +74,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     @tasks.loop(time=times)
     async def auto_save(self):
-        await self.save
+        channel = await self.bot.fetch_channel(conf.get("DC_STATE_CHANNEL"))
+        await self.save(channel)
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
