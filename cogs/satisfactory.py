@@ -68,7 +68,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         print(f"heartbeat: {heart_beats:4}")
         udpstatus = self.probe_udp(conf)
         server_state = self.serverStates[udpstatus["ServerState"]]
-        print(f"\tUDP Probe complete.  {server_state=}")
+        print(f"UDP Probe complete.  {server_state=}")
         # server_name = udpstatus['ServerName']
         if server_state != last_server_state:
             if server_state != "Offline":
@@ -86,9 +86,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     async def sf_auto_save(self, channel):
         global next_save
+        thread = await self.bot.fetch_channel(1299147362140422164)
         if datetime.datetime.now() > next_save:
-            print(f"Using {channel} for auto save posts")
-            await self.save(channel, save_name="Discord_AutoSave", silent=True)
+            print(f"Using {thread} for auto save posts")
+            await self.save(thread, save_name="Discord_AutoSave", silent=True)
             next_save = datetime.datetime.now() + datetime.timedelta(hours=2)
             print(f"Next save: {next_save}")
         else:
