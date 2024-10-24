@@ -413,8 +413,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         return msgFromServer[0], time_recv - time_sent
 
     def probe_udp(self, conf: ConfigManager):
-        host = conf.get("SF_IP")
-        port = conf.get("SF_PORT")
         udp_probe = self.probeLightAPI(conf)
         if udp_probe == (None, None):
             return {"ServerState": 0, "ServerName": "X", "ServerNetCL": "None"}
