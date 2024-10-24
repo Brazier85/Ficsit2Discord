@@ -24,6 +24,7 @@ bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/head
 conf = ConfigManager()
 heart_beats = 0
 last_server_state = ""
+next_save = ""
 
 utc = datetime.timezone.utc
 
@@ -55,11 +56,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         self.protocolVersion = 1
         self.servername = conf.get("SF_SERVER_NAME")
         self.sf_server_monitor.start()
-        self.sf_auto_save.start()
 
     def cog_unload(self):
-        self.sf_auto_save.cancel()
-        self.sf_auto_save.cancel()
+        self.sf_server_monitor.cancel()
 
     @tasks.loop(seconds=30)
     async def sf_server_monitor(self):
@@ -83,12 +82,18 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         chan_id = conf.get("DC_STATE_CHANNEL")
         channel = await self.bot.fetch_channel(chan_id)
         await channel.edit(name=f"satisfactory-{prefix_icon}")
+        await self.sf_auto_save()
 
-    @tasks.loop(time=times)
     async def sf_auto_save(self):
-        channel = self.bot.get_channel(conf.get("DC_STATE_CHANNEL"))
-        print(f"Using {channel} for auto save posts")
-        await self.save(ctx=channel, silent=True)
+        global next_save
+        if (datetime.datetime.now() > next_save) or (next_save == ""):
+            channel = self.bot.get_channel(conf.get("DC_STATE_CHANNEL"))
+            print(f"Using {channel} for auto save posts")
+            await self.save(ctx=channel, silent=True)
+            next_save = datetime.datetime.now() + datetime.timedelta(hours=2)
+            print(f"Next save: {next_save}")
+        else:
+            print("No autosave required")
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
