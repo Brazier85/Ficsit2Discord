@@ -23,7 +23,7 @@ from data.mappers import (
 bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 conf = ConfigManager()
 heart_beats = 0
-current_server_state = ""
+last_server_state = ""
 
 utc = datetime.timezone.utc
 
