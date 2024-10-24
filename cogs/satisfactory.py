@@ -24,7 +24,7 @@ bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/head
 conf = ConfigManager()
 heart_beats = 0
 last_server_state = ""
-next_save = ""
+next_save = datetime.datetime.now()
 
 utc = datetime.timezone.utc
 
@@ -82,14 +82,13 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         chan_id = conf.get("DC_STATE_CHANNEL")
         channel = await self.bot.fetch_channel(chan_id)
         await channel.edit(name=f"satisfactory-{prefix_icon}")
-        await self.sf_auto_save()
+        await self.sf_auto_save(channel)
 
-    async def sf_auto_save(self):
+    async def sf_auto_save(self, channel):
         global next_save
-        if (datetime.datetime.now() > next_save) or (next_save == ""):
-            channel = self.bot.get_channel(conf.get("DC_STATE_CHANNEL"))
+        if datetime.datetime.now() > next_save:
             print(f"Using {channel} for auto save posts")
-            await self.save(ctx=channel, silent=True)
+            await self.save(channel, save_name="Discord_AutoSave", silent=True)
             next_save = datetime.datetime.now() + datetime.timedelta(hours=2)
             print(f"Next save: {next_save}")
         else:
@@ -133,11 +132,11 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         try:
             api.save_game(SaveName=save_name)
         except SaveGameFailed as error:
-            await msg.edit(content=f":x: Could not save game: {error}", silent=silent)
+            await msg.edit(content=f":x: Could not save game: {error}")
             return False
         else:
             await msg.edit(content=":white_check_mark: Game saved Successfully!")
-            await self.download_save(ctx, msg, save_name, silent)
+            await self.download_save(ctx, msg, save_name, silent=silent)
             return True
 
     async def download_save(self, ctx, msg, save_name, silent=False):
@@ -145,12 +144,12 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         save_filename = f"{save_name}.sav"
         save_path = f"./files/savegames/{save_filename}"
         try:
-            await msg.edit(content="Downloading save game!", silent=silent)
+            await msg.edit(content="Downloading save game!")
             api.download_save_game(save_name, save_path)
         except Exception as err:
             print(f"Unexpected {err=}, {type(err)=}")
             print("Could not download save game")
-            await msg.edit(content="Coud not download the save game", silent=silent)
+            await msg.edit(content="Coud not download the save game")
         else:
             file = discord.File(save_path)
 
