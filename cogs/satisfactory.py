@@ -23,6 +23,7 @@ from data.mappers import (
 bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 conf = ConfigManager()
 heart_beats = 0
+current_server_state = ""
 
 utc = datetime.timezone.utc
 
@@ -56,26 +57,37 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         self.sf_server_monitor.start()
         self.sf_auto_save.start()
 
+    def cog_unload(self):
+        self.sf_auto_save.cancel()
+        self.sf_auto_save.cancel()
+
     @tasks.loop(seconds=30)
     async def sf_server_monitor(self):
         global heart_beats
+        global last_server_state
         heart_beats += 1
         print(f"heartbeat: {heart_beats:4}")
         udpstatus = self.probe_udp(conf)
         server_state = self.serverStates[udpstatus["ServerState"]]
         print(f"\tUDP Probe complete.  {server_state=}")
         # server_name = udpstatus['ServerName']
-        if server_state != "Offline":
-            prefix_icon = "✅"
+        if server_state != last_server_state:
+            if server_state != "Offline":
+                prefix_icon = "✅"
+            elif server_state != "Ready":
+                prefix_icon = "⚠️"
+            else:
+                prefix_icon = "❌"
         else:
-            prefix_icon = "❌"
+            print("heartbeat: State did not change!")
         chan_id = conf.get("DC_STATE_CHANNEL")
         channel = await self.bot.fetch_channel(chan_id)
         await channel.edit(name=f"satisfactory-{prefix_icon}")
 
     @tasks.loop(time=times)
     async def sf_auto_save(self):
-        channel = await self.bot.fetch_channel(conf.get("DC_STATE_CHANNEL"))
+        channel = self.bot.get_channel(conf.get("DC_STATE_CHANNEL"))
+        print(f"Using {channel} for auto save posts")
         await self.save(ctx=channel, silent=True)
 
     @commands.hybrid_group(fallback="sf")
