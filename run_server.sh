@@ -24,7 +24,7 @@ start)
     echo "Check for a new version"
     git pull
     echo "Starting script..."
-    nohup $SCRIPT >$LOG_FILE 2>&1 &
+    nohup $SCRIPT 2>&1 >$LOG_FILE &
     echo $! >$PID_FILE
     echo "Script started with PID: $(cat $PID_FILE)"
     ;;

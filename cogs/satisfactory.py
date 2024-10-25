@@ -89,7 +89,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             await self.save(thread, save_name="Discord_AutoSave", silent=True)
             print(f"Next save: {next_save}")
         else:
-            print("No autosave required")
+            print(f"No autosave required: Next save: {next_save}")
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
