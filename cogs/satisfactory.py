@@ -76,7 +76,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         try:
             thread = await self.bot.fetch_channel(conf.get("DISCORD_AUTOSAVE_CHANNEL"))
         except Exception as err:
-            print(f"Could not find Channel/Thread for Autosave {err}")
+            self.handle_error(err, "Could not find Channel/Thread for Autosave")
             channel = await self.bot.fetch_channel(conf.get("DISCORD_STATE_CHANNEL"))
             thread = await channel.create_thread(
                 name="F2D AutoSave", type=discord.ChannelType.public_thread
@@ -104,24 +104,14 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @sf.command(name="restart")
     async def restart(self, ctx):
         """Save the game and restart the server."""
-        api = self.api
-        if await self.save(ctx):
-            try:
-                api.shutdown()
-            except Exception as err:
-                print(f"Unexpected {err=}, {type(err)=}")
-                print("Error on shutdown!")
-                await ctx.send("Could not shutdown the server!")
-            else:
-                embed = await self.create_embed(title="Server Successfully stopped!")
-                embed.add_field(
-                    name="Server is restarting...",
-                    value="The restart can take up to 5 minutes.",
-                    inline=False,
-                )
-                await ctx.send(embed=embed)
-        else:
-            await ctx.send("I could not save the game! No restart possible!")
+        await self.perform_server_action(
+            ctx,
+            self.api.shutdown,
+            "Server Successfully stopped!",
+            "Error on shutdown!",
+            "Could not shutdown the server!",
+            save_before=True,
+        )
 
     @commands.has_role(conf.get("DISCORD_SF_ADMIN_ROLE"))
     @sf.command(name="save")
@@ -147,37 +137,49 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             await msg.edit(content="Downloading save game!")
             api.download_save_game(save_name, save_path)
         except Exception as err:
-            print(f"Unexpected {err=}, {type(err)=}")
-            print("Could not download save game")
-            await msg.edit(content="Coud not download the save game")
+            self.handle_error(err, "Could not download save game")
+            await msg.edit(content="Could not download the save game")
         else:
             file = discord.File(save_path)
 
             # Define embed
             embed = await self.create_embed(
-                title=f"{self.servername} Savegame", color=0x00F51D
+                title=f"{self.servername} Savegame",
+                color=0x00F51D,
+                fields=[
+                    {
+                        "name": "",
+                        "value": ":white_check_mark: Successfully saved game!",
+                        "inline": False,
+                    },
+                    {
+                        "name": "Save File",
+                        "value": f"`{save_filename}`",
+                        "inline": True,
+                    },
+                ],
             )
-            embed.add_field(
-                name="",
-                value=":white_check_mark: Successfully saved game!",
-                inline=False,
-            )
-            embed.add_field(name="Save File", value=f"`{save_filename}`")
             try:
                 await ctx.send(file=file, embed=embed, silent=silent)
                 await msg.delete()
             except Exception as err:
-                print(f"Unexpected {err=}, {type(err)=}")
-                print("Error sending file")
-                await msg.edit("Cloud not send save file to Discord!", silent=silent)
+                self.handle_error(err, "Error sending file")
+                await msg.edit("Could not send save file to Discord!", silent=silent)
 
     @sf.command(name="connect")
     async def sf_connect(self, ctx):
         """Show server connection details"""
-        embed = await self.create_embed(title=f"{self.servername} Details")
-
-        embed.add_field(name="Address", value=conf.get("SF_PUBLIC_ADDR"), inline=False)
-        embed.add_field(name="Password", value="Ask a Moderator", inline=False)
+        embed = await self.create_embed(
+            title=f"{self.servername} Details",
+            fields=[
+                {
+                    "name": "Address",
+                    "value": conf.get("SF_PUBLIC_ADDR"),
+                    "inline": False,
+                },
+                {"name": "Password", "value": "Ask a Moderator", "inline": False},
+            ],
+        )
         await ctx.send(embed=embed)
 
     @sf.command(name="state")
@@ -196,29 +198,30 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         session_name = current_state["activeSessionName"]
         paused = current_state["isGamePaused"]
         health = current_health
-        if health == "healthy":
-            color = 0x00F51D
-        else:
-            color = 0xFFF700
+        color = 0x00F51D if health == "healthy" else 0xFFF700
 
         # Define Embed
-        embed = await self.create_embed(color=color, title=f"{self.servername} Status")
-
-        embed.add_field(
-            name="",
-            value=f"{icon_mapper.get(health, health)} Server is **{health}**",
-            inline=False,
+        embed = await self.create_embed(
+            color=color,
+            title=f"{self.servername} Status",
+            fields=[
+                {
+                    "name": "",
+                    "value": f"{icon_mapper.get(health, health)} Server is **{health}**",
+                    "inline": False,
+                },
+                {"name": "Players", "value": f"{p_online}/{p_max}", "inline": True},
+                {"name": "Avg Ticks", "value": f"{ticks:.2f}", "inline": True},
+                {"name": "Playtime", "value": f"{playtime}", "inline": True},
+                {
+                    "name": "Game paused",
+                    "value": f"{icon_mapper.get(str(paused), paused)}",
+                    "inline": True,
+                },
+                {"name": "Tech Tier", "value": f"{tech_tier}", "inline": True},
+                {"name": "Session Name", "value": f"{session_name}", "inline": True},
+            ],
         )
-        embed.add_field(name="Players", value=f"{p_online}/{p_max}", inline=True)
-        embed.add_field(name="Avg Ticks", value=f"{ticks:.2f}", inline=True)
-        embed.add_field(name="Playtime", value=f"{playtime}", inline=True)
-        embed.add_field(
-            name="Game paused",
-            value=f"{icon_mapper.get(str(paused), paused)}",
-            inline=True,
-        )
-        embed.add_field(name="Tech Tier", value=f"{tech_tier}", inline=True)
-        embed.add_field(name="Session Name", value=f"{session_name}", inline=True)
 
         await ctx.send(embed=embed)
 
@@ -229,37 +232,37 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         current_settings = api.get_server_options()["serverOptions"]
 
         # Define Embed
-        embed = await self.create_embed(title=f"{self.servername} Settings")
-        for param, value in current_settings.items():
-            embed.add_field(
-                name=settings_mapper.get(param, param),
-                value=icon_mapper.get(value, value),
-                inline=True,
-            )
-
+        fields = [
+            {
+                "name": settings_mapper.get(param, param),
+                "value": icon_mapper.get(value, value),
+                "inline": True,
+            }
+            for param, value in current_settings.items()
+        ]
+        embed = await self.create_embed(
+            title=f"{self.servername} Settings", fields=fields
+        )
         await ctx.send(embed=embed)
 
     @commands.is_owner()
     @sf.command(name="console")
     async def console(self, ctx, *, cmd):
         """Send a console command"""
-        api = self.api
-        try:
-            result = api.run_command(cmd)
-        except Exception as e:
-            print(e)
-            await ctx.send(f"Cloud not execute the command: {cmd}")
-            await ctx.send(e)
-        else:
-            await ctx.send(f"Command `{cmd}` executed!")
-            await ctx.send(f"Result: {result}")
+        await self.perform_server_action(
+            ctx,
+            lambda: self.api.run_command(cmd),
+            f"Command `{cmd}` executed!",
+            f"Could not execute the command: {cmd}",
+            f"Could not execute the command: {cmd}",
+        )
 
     @commands.is_owner()
     @sf.group()
     async def user(self, ctx):
         """Manage bot access rights"""
         if ctx.invoked_subcommand is None:
-            await ctx.send("Commadn not found. Use `!help sf user`")
+            await ctx.send("Command not found. Use `!help sf user`")
 
     @user.command(name="add")
     async def add_bot_user(self, ctx, member: discord.Member):
@@ -274,8 +277,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             try:
                 await guild.create_role(name=admin_role, hoist=True)
             except Exception as e:
-                print(e)
-                await ctx.send(f"Could not create role `{admin_role}`.")
+                self.handle_error(e, f"Could not create role `{admin_role}`.")
                 return
             else:
                 print(f"Role {admin_role} created")
@@ -286,8 +288,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             try:
                 await member.add_roles(discord.utils.get(guild.roles, name=admin_role))
             except Exception as e:
-                print(e)
-                await ctx.send(f"Could not add `{member}` role `{admin_role}`.")
+                self.handle_error(
+                    e, f"Could not add `{member}` to role `{admin_role}`."
+                )
             else:
                 print(f"@{member} added to role {admin_role} created")
                 await ctx.send(f"I added {member.mention} to role `{admin_role}`.")
@@ -311,8 +314,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                     discord.utils.get(guild.roles, name=admin_role)
                 )
             except Exception as e:
-                print(e)
-                await ctx.send(f"Could not remove `{member}` from role `{admin_role}`.")
+                self.handle_error(
+                    e, f"Could not remove `{member}` from role `{admin_role}`."
+                )
             else:
                 print(f"@{member} removed from role {admin_role}")
                 await ctx.send(f"I removed {member.mention} from role `{admin_role}`.")
@@ -360,7 +364,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         try:
             api.apply_server_options({setting: value})
         except Exception as err:
-            print(f"Unexpected {err=}, {type(err)=}")
+            self.handle_error(err, "Could not change setting")
             await ctx.send("Could not change setting")
         else:
             await ctx.send(
@@ -368,7 +372,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             )
 
     # Create a discord embed
-    async def create_embed(self, title="Ficsit2Discord Bot", color=0x00B0F4):
+    async def create_embed(
+        self, title="Ficsit2Discord Bot", color=0x00B0F4, fields=None
+    ):
         # Define Embed
         embed = discord.Embed(
             title=title,
@@ -382,7 +388,39 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         )
         embed.set_thumbnail(url=bot_logo)
         embed.set_footer(text="Ficsit2Discord Bot")
+        if fields:
+            for field in fields:
+                embed.add_field(
+                    name=field["name"],
+                    value=field["value"],
+                    inline=field.get("inline", True),
+                )
         return embed
+
+    def handle_error(self, err, context_message="An error occurred"):
+        print(f"{context_message}: Unexpected {err=}, {type(err)=}")
+
+    async def perform_server_action(
+        self,
+        ctx,
+        action,
+        success_message,
+        error_log_message,
+        error_message,
+        save_before=False,
+    ):
+        if save_before:
+            save_success = await self.save(ctx)
+            if not save_success:
+                await ctx.send("I could not save the game! No further action possible!")
+                return
+        try:
+            action()
+        except Exception as err:
+            self.handle_error(err, error_log_message)
+            await ctx.send(error_message)
+        else:
+            await ctx.send(success_message)
 
     def probeLightAPI(self, conf: ConfigManager):
         msgID = bytes.fromhex("D5F6")  # Protocol Magic identifying the UDP Protocol
