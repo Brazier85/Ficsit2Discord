@@ -24,6 +24,9 @@ class ConfigManager:
             )
             self.config["SF_PUBLIC_ADDR"] = os.getenv("SF_PUBLIC_ADDR", "127.0.0.1")
             self.config["DC_STATE_CHANNEL"] = os.getenv("DISCORD_STATE_CHANNEL")
+            self.config["DC_AUTOSAVE_CHANNEL"] = os.getenv(
+                "DISCORD_AUTOSAVE_CHANNEL", ""
+            )
         except TypeError as e:
             print(f"Error reading 'dotenv': {e}")
 

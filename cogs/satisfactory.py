@@ -28,21 +28,6 @@ next_save = datetime.datetime.now()
 
 utc = datetime.timezone.utc
 
-times = [
-    datetime.time(hour=0, tzinfo=utc),
-    datetime.time(hour=2, tzinfo=utc),
-    datetime.time(hour=4, tzinfo=utc),
-    datetime.time(hour=6, tzinfo=utc),
-    datetime.time(hour=8, tzinfo=utc),
-    datetime.time(hour=10, tzinfo=utc),
-    datetime.time(hour=12, tzinfo=utc),
-    datetime.time(hour=14, tzinfo=utc),
-    datetime.time(hour=16, tzinfo=utc),
-    datetime.time(hour=18, tzinfo=utc),
-    datetime.time(hour=20, tzinfo=utc),
-    datetime.time(hour=22, tzinfo=utc),
-]
-
 
 class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     """**!sf <command>**\nEverything Satisfactory related."""
@@ -60,7 +45,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     def cog_unload(self):
         self.sf_server_monitor.cancel()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=15)
     async def sf_server_monitor(self):
         global heart_beats
         global last_server_state
@@ -71,26 +56,36 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         print(f"UDP Probe complete.  {server_state=}")
         # server_name = udpstatus['ServerName']
         if server_state != last_server_state:
-            if server_state != "Offline":
-                prefix_icon = "✅"
-            elif server_state != "Ready":
-                prefix_icon = "⚠️"
+            if server_state == "Offline":
+                prefix_icon = ":cross_mark:"
+            elif server_state == "Ready":
+                prefix_icon = ":white_check_mark:"
             else:
-                prefix_icon = "❌"
+                prefix_icon = ":warning:"
+            # Do channel update
+            chan_id = conf.get("DC_STATE_CHANNEL")
+            channel = await self.bot.fetch_channel(chan_id)
+            await channel.edit(name=f"satisfactory-{prefix_icon}")
         else:
             print("heartbeat: State did not change!")
-        chan_id = conf.get("DC_STATE_CHANNEL")
-        channel = await self.bot.fetch_channel(chan_id)
-        await channel.edit(name=f"satisfactory-{prefix_icon}")
-        await self.sf_auto_save(channel)
+        await self.sf_auto_save()
 
-    async def sf_auto_save(self, channel):
+    async def sf_auto_save(self):
         global next_save
-        thread = await self.bot.fetch_channel(1299147362140422164)
+        try:
+            thread = await self.bot.fetch_channel(conf.get("DC_AUTOSAVE_CHANNEL"))
+        except Exception as err:
+            print(f"Could not find Channel/Thread for Autosave {err}")
+            channel = await self.bot.fetch_channel(conf.get("DC_STATE_CHANNEL"))
+            thread = await channel.create_thread(
+                name="F2D AutoSave", type=discord.ChannelType.public_thread
+            )
+            conf.set("DISCORD_AUTOSAVE_CHANNEL", thread.id)
+
         if datetime.datetime.now() > next_save:
             print(f"Using {thread} for auto save posts")
-            await self.save(thread, save_name="Discord_AutoSave", silent=True)
             next_save = datetime.datetime.now() + datetime.timedelta(hours=2)
+            await self.save(thread, save_name="Discord_AutoSave", silent=True)
             print(f"Next save: {next_save}")
         else:
             print("No autosave required")
