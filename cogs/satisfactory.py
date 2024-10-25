@@ -57,9 +57,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         # server_name = udpstatus['ServerName']
         if server_state != last_server_state:
             if server_state == "Offline":
-                prefix_icon = ":cross_mark:"
-            elif server_state == "Ready":
-                prefix_icon = ":white_check_mark:"
+                prefix_icon = "❌"
+            elif server_state == "⚠":
+                prefix_icon = "✅"
             else:
                 prefix_icon = ":warning:"
             # Do channel update
