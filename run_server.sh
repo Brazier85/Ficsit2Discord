@@ -9,7 +9,6 @@
 SCRIPT="./main.py"
 LOG_FILE="Ficit2Discord.log"
 PID_FILE="current.pid"
-PYTHONUNBUFFERED=1
 
 source .venv/bin/activate
 
@@ -25,7 +24,7 @@ start)
     echo "Check for a new version"
     git pull
     echo "Starting script..."
-    nohup $SCRIPT >$LOG_FILE &
+    nohup python -u $SCRIPT >$LOG_FILE &
     echo $! >$PID_FILE
     echo "Script started with PID: $(cat $PID_FILE)"
     ;;
