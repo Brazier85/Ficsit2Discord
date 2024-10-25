@@ -540,7 +540,7 @@ async def setup(bot):
 
 def main() -> None:
     try:
-        raise NotImplementedError("bot_config.py should not be executed directly.")
+        raise NotImplementedError("satisfactory.py should not be executed directly.")
     except NotImplementedError as e:
         print(f"{e}")
         sys.exit(1)
