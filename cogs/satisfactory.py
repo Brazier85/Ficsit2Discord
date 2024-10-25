@@ -85,7 +85,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
         if datetime.datetime.now() > next_save:
             print(f"Using {thread} for auto save posts")
-            next_save = datetime.datetime.now() + datetime.timedelta(hours=2)
+            dt = datetime.datetime.now()
+            next_save = dt + datetime.timedelta(
+                hours=2, minutes=-dt.minute, seconds=-dt.second
+            )
             await self.save(thread, save_name="Discord_AutoSave", silent=True)
             print(f"Next save: {next_save}")
         else:
