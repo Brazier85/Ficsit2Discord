@@ -186,8 +186,8 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def state(self, ctx):
         """Will post the current server state"""
         api = self.api
-        current_state = api.query_server_state()["serverGameState"]
-        current_health = api.get_server_health()["health"]
+        current_state = api.query_server_state()["data"]["serverGameState"]
+        current_health = api.get_server_health()
 
         # Create vars
         playtime = str(datetime.timedelta(seconds=current_state["totalGameDuration"]))

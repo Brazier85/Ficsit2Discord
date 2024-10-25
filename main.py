@@ -8,7 +8,8 @@ import discord
 from discord.ext import commands
 
 # SF Imports
-from pyfactorybridge import API
+# from pyfactorybridge import API
+from satisfactory_api_client import SatisfactoryAPI
 
 from data.config import ConfigManager
 
@@ -121,8 +122,13 @@ async def load_cogs():
 # Main function
 def main():
     print("Loading SF API")
-    bot.api = API(
-        address=f"{conf.get('SF_IP')}:{conf.get('SF_PORT')}", token=conf.get("SF_TOKEN")
+    # bot.api = API(
+    # address=f"{conf.get('SF_IP')}:{conf.get('SF_PORT')}", token=conf.get("SF_TOKEN")
+    # )
+    bot.api = SatisfactoryAPI(
+        host=conf.get("SF_IP"),
+        port=conf.get("SF_PORT"),
+        auth_token=conf.get("SF_TOKEN"),
     )
     print("Discord Login")
     # Login into Discord

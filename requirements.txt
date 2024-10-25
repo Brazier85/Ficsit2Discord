@@ -1,4 +1,5 @@
 discord.py
 python-dotenv
 PyFactoryBridge
+satisfactory-api-client
 numpy
