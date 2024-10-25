@@ -58,10 +58,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if server_state != last_server_state:
             if server_state == "Offline":
                 prefix_icon = "❌"
-            elif server_state == "⚠":
+            elif server_state == "Live":
                 prefix_icon = "✅"
             else:
-                prefix_icon = ":warning:"
+                prefix_icon = "⚠"
             # Do channel update
             chan_id = conf.get("DISCORD_STATE_CHANNEL")
             channel = await self.bot.fetch_channel(chan_id)
