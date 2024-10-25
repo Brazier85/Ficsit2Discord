@@ -24,7 +24,8 @@ bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/head
 conf = ConfigManager()
 heart_beats = 0
 last_server_state = ""
-next_save = datetime.datetime.now()
+dt = datetime.datetime.now()
+next_save = dt + datetime.timedelta(hours=1, minutes=-dt.minute, seconds=-dt.second)
 
 utc = datetime.timezone.utc
 
