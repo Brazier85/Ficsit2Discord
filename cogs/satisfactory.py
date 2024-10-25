@@ -63,7 +63,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             else:
                 prefix_icon = ":warning:"
             # Do channel update
-            chan_id = conf.get("DC_STATE_CHANNEL")
+            chan_id = conf.get("DISCORD_STATE_CHANNEL")
             channel = await self.bot.fetch_channel(chan_id)
             await channel.edit(name=f"satisfactory-{prefix_icon}")
         else:
@@ -73,10 +73,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def sf_auto_save(self):
         global next_save
         try:
-            thread = await self.bot.fetch_channel(conf.get("DC_AUTOSAVE_CHANNEL"))
+            thread = await self.bot.fetch_channel(conf.get("DISCORD_AUTOSAVE_CHANNEL"))
         except Exception as err:
             print(f"Could not find Channel/Thread for Autosave {err}")
-            channel = await self.bot.fetch_channel(conf.get("DC_STATE_CHANNEL"))
+            channel = await self.bot.fetch_channel(conf.get("DISCORD_STATE_CHANNEL"))
             thread = await channel.create_thread(
                 name="F2D AutoSave", type=discord.ChannelType.public_thread
             )
@@ -96,7 +96,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send("Command not found. Use `!help sf`")
 
-    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
+    @commands.has_role(conf.get("DISCORD_SF_ADMIN_ROLE"))
     @sf.command(name="restart")
     async def restart(self, ctx):
         """Save the game and restart the server."""
@@ -119,7 +119,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         else:
             await ctx.send("I could not save the game! No restart possible!")
 
-    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
+    @commands.has_role(conf.get("DISCORD_SF_ADMIN_ROLE"))
     @sf.command(name="save")
     async def save(self, ctx, save_name="Ficit2Discord", silent=False):
         """This command will save the game"""
@@ -313,7 +313,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 print(f"@{member} removed from role {admin_role}")
                 await ctx.send(f"I removed {member.mention} from role `{admin_role}`.")
 
-    @commands.has_role(conf.get("DC_SF_ADMIN_ROLE"))
+    @commands.has_role(conf.get("DISCORD_SF_ADMIN_ROLE"))
     @sf.group()
     async def set(self, ctx):
         """Change server settings"""

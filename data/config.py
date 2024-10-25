@@ -10,10 +10,10 @@ class ConfigManager:
         self.config = {}
         try:
             load_dotenv(dotenv_path="./.env")
-            self.config["DC_TOKEN"] = os.getenv("DISCORD_TOKEN", "")
-            self.config["DC_GUILD"] = int(os.getenv("DISCORD_GUILD"))
-            self.config["DC_OWNER"] = os.getenv("DISCORD_BOT_OWNER", "")
-            self.config["DC_SF_ADMIN_ROLE"] = os.getenv(
+            self.config["DISCORD_TOKEN"] = os.getenv("DISCORD_TOKEN", "")
+            self.config["DISCORD_GUILD"] = int(os.getenv("DISCORD_GUILD"))
+            self.config["DISCORD_OWNER"] = os.getenv("DISCORD_BOT_OWNER", "")
+            self.config["DISCORD_SF_ADMIN_ROLE"] = os.getenv(
                 "DISCORD_SF_ADMIN_ROLE", "Ficsit2Discord"
             )
             self.config["SF_IP"] = os.getenv("SF_IP", "127.0.0.1")
@@ -23,8 +23,8 @@ class ConfigManager:
                 "SF_SERVER_NAME", "My awsome server!"
             )
             self.config["SF_PUBLIC_ADDR"] = os.getenv("SF_PUBLIC_ADDR", "127.0.0.1")
-            self.config["DC_STATE_CHANNEL"] = os.getenv("DISCORD_STATE_CHANNEL")
-            self.config["DC_AUTOSAVE_CHANNEL"] = os.getenv(
+            self.config["DISCORD_STATE_CHANNEL"] = os.getenv("DISCORD_STATE_CHANNEL")
+            self.config["DISCORD_AUTOSAVE_CHANNEL"] = os.getenv(
                 "DISCORD_AUTOSAVE_CHANNEL", ""
             )
         except TypeError as e:
@@ -54,6 +54,7 @@ class ConfigManager:
         if set_key(
             dotenv_path="./.env", key_to_set=key, value_to_set=value, quote_mode=qm
         ):
+            self.config[key] = value
             return True
         else:
             return False

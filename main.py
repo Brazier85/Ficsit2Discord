@@ -41,7 +41,7 @@ bot = commands.Bot(
 async def on_ready():
     await load_cogs()
     print(f"Logged in as: {bot.user.name} - {bot.user.id}")
-    chan_id = conf.get("DC_STATE_CHANNEL")
+    chan_id = conf.get("DISCORD_STATE_CHANNEL")
     channel = await bot.fetch_channel(chan_id)
     print(f"Special channel info: {channel=}")
     print(f"Version: {discord.__version__}")
@@ -126,7 +126,7 @@ def main():
     )
     print("Discord Login")
     # Login into Discord
-    bot.run(conf.get("DC_TOKEN"), reconnect=True)
+    bot.run(conf.get("DISCORD_TOKEN"), reconnect=True)
 
 
 if __name__ == "__main__":
