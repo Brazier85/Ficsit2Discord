@@ -8,6 +8,7 @@ import discord
 import numpy as np
 from discord.ext import commands, tasks
 from pyfactorybridge.exceptions import SaveGameFailed
+from satisfactory_api_client.data import ServerOptions
 
 from data.config import ConfigManager
 
@@ -120,7 +121,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         api = self.api
         msg = await ctx.send("Saving game...", silent=silent)
         try:
-            api.save_game(SaveName=save_name)
+            api.save_game(save_name=save_name)
         except SaveGameFailed as error:
             await msg.edit(content=f":x: Could not save game: {error}")
             return False
@@ -135,7 +136,10 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         save_path = f"./files/savegames/{save_filename}"
         try:
             await msg.edit(content="Downloading save game!")
-            api.download_save_game(save_name, save_path)
+            response = api.download_save_game(save_name)
+            if response and isinstance(response.data, bytes):  # Ensure data is in bytes
+                with open(save_path, "wb") as file:
+                    file.write(response.data)
         except Exception as err:
             self.handle_error(err, "Could not download save game")
             await msg.edit(content="Could not download the save game")
@@ -186,42 +190,49 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def state(self, ctx):
         """Will post the current server state"""
         api = self.api
-        current_state = api.query_server_state()["data"]["serverGameState"]
-        current_health = api.get_server_health()
+        server_state = api.query_server_state()
+        current_health = api.health_check().data["health"]
+        if server_state.success:
+            # Create vars
+            current_state = server_state.data["serverGameState"]
+            playtime = str(
+                datetime.timedelta(seconds=current_state["totalGameDuration"])
+            )
+            p_max = current_state["playerLimit"]
+            p_online = current_state["numConnectedPlayers"]
+            ticks = current_state["averageTickRate"]
+            tech_tier = current_state["techTier"]
+            session_name = current_state["activeSessionName"]
+            paused = current_state["isGamePaused"]
+            health = current_health
+            color = 0x00F51D if health == "healthy" else 0xFFF700
 
-        # Create vars
-        playtime = str(datetime.timedelta(seconds=current_state["totalGameDuration"]))
-        p_max = current_state["playerLimit"]
-        p_online = current_state["numConnectedPlayers"]
-        ticks = current_state["averageTickRate"]
-        tech_tier = current_state["techTier"]
-        session_name = current_state["activeSessionName"]
-        paused = current_state["isGamePaused"]
-        health = current_health
-        color = 0x00F51D if health == "healthy" else 0xFFF700
-
-        # Define Embed
-        embed = await self.create_embed(
-            color=color,
-            title=f"{self.servername} Status",
-            fields=[
-                {
-                    "name": "",
-                    "value": f"{icon_mapper.get(health, health)} Server is **{health}**",
-                    "inline": False,
-                },
-                {"name": "Players", "value": f"{p_online}/{p_max}", "inline": True},
-                {"name": "Avg Ticks", "value": f"{ticks:.2f}", "inline": True},
-                {"name": "Playtime", "value": f"{playtime}", "inline": True},
-                {
-                    "name": "Game paused",
-                    "value": f"{icon_mapper.get(str(paused), paused)}",
-                    "inline": True,
-                },
-                {"name": "Tech Tier", "value": f"{tech_tier}", "inline": True},
-                {"name": "Session Name", "value": f"{session_name}", "inline": True},
-            ],
-        )
+            # Define Embed
+            embed = await self.create_embed(
+                color=color,
+                title=f"{self.servername} Status",
+                fields=[
+                    {
+                        "name": "",
+                        "value": f"{icon_mapper.get(health, health)} Server is **{health}**",
+                        "inline": False,
+                    },
+                    {"name": "Players", "value": f"{p_online}/{p_max}", "inline": True},
+                    {"name": "Avg Ticks", "value": f"{ticks:.2f}", "inline": True},
+                    {"name": "Playtime", "value": f"{playtime}", "inline": True},
+                    {
+                        "name": "Game paused",
+                        "value": f"{icon_mapper.get(str(paused), paused)}",
+                        "inline": True,
+                    },
+                    {"name": "Tech Tier", "value": f"{tech_tier}", "inline": True},
+                    {
+                        "name": "Session Name",
+                        "value": f"{session_name}",
+                        "inline": True,
+                    },
+                ],
+            )
 
         await ctx.send(embed=embed)
 
@@ -229,7 +240,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     async def options(self, ctx):
         """Show the current server settings"""
         api = self.api
-        current_settings = api.get_server_options()["serverOptions"]
+        current_settings = api.get_server_options().data["serverOptions"]
 
         # Define Embed
         fields = [
@@ -331,38 +342,40 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
     @set.command(name="auto_save")
     async def auto_save(self, ctx, value):
         """Auto save game on player disconnect"""
-        await self.change_setting(ctx, "FG.DSAutoSaveOnDisconnect", value)
+        await self.change_setting(ctx, "DSAutoSaveOnDisconnect", value)
 
     @set.command(name="auto_pause")
     async def auto_pause(self, ctx, value):
         """Auto pause game on player disconnect"""
-        await self.change_setting(ctx, "FG.DSAutoPause", value)
+        await self.change_setting(ctx, "DSAutoPause", value)
 
     @set.command(name="save_interval")
     async def save_interval(self, ctx, value):
         """Auto save interval"""
-        await self.change_setting(ctx, "FG.AutosaveInterval", value)
+        await self.change_setting(ctx, "AutosaveInterval", value)
 
     @set.command(name="restart_time")
     async def restart_time(self, ctx, value):
         """Server restart time"""
-        await self.change_setting(ctx, "FG.ServerRestartTimeSlot", value)
+        await self.change_setting(ctx, "ServerRestartTimeSlot", value)
 
     @set.command(name="gameplay_data")
     async def gameplay_data(self, ctx, value):
         """Send Gameplay Data"""
-        await self.change_setting(ctx, "FG.SendGameplayData", value)
+        await self.change_setting(ctx, "SendGameplayData", value)
 
     @set.command(name="network_quality")
     async def network_quality(self, ctx, value):
         """Set network quality"""
-        await self.change_setting(ctx, "FG.NetworkQuality", int(value))
+        await self.change_setting(ctx, "NetworkQuality", int(value))
 
     # Do the actual change
     async def change_setting(self, ctx, setting, value):
         api = self.api
         try:
-            api.apply_server_options({setting: value})
+            new_setting = ServerOptions()
+            setattr(new_setting, setting, value)
+            api.apply_server_options(new_setting)
         except Exception as err:
             self.handle_error(err, "Could not change setting")
             await ctx.send("Could not change setting")
