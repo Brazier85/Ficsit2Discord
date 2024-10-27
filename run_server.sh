@@ -12,12 +12,6 @@ PID_FILE="current.pid"
 
 source .venv/bin/activate
 
-echo "Check for a new version"
-git pull
-
-echo "Install requirements"
-pip install --upgrade -r requirements.txt
-
 # Check the input parameter
 case "$1" in
 start)
@@ -25,6 +19,12 @@ start)
         echo "Script is already running with PID: $(cat $PID_FILE)"
         exit 1
     fi
+    echo "Check for a new version"
+    git pull
+
+    echo "Install requirements"
+    pip install --upgrade -r requirements.txt
+
     echo "Starting script..."
     nohup python -u $SCRIPT >$LOG_FILE &
     echo $! >$PID_FILE
