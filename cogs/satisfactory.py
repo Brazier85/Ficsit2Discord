@@ -60,7 +60,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         try:
             udpstatus = self.probe_udp(conf)
             server_state = self.serverStates[udpstatus["ServerState"]]
-            logger.info(f"UDP Probe complete.  {server_state=}")
+            # logger.info(f"UDP Probe complete.  {server_state=}")
             # server_name = udpstatus['ServerName']
             if server_state != last_server_state:
                 logger.info(
@@ -86,18 +86,30 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
 
     async def sf_auto_save(self):
         global next_save
-        try:
-            thread = await self.bot.fetch_channel(conf.get("DISCORD_AUTOSAVE_CHANNEL"))
-        except Exception as err:
-            self.handle_error(err, "Could not find Channel/Thread for Autosave")
-            # Creating Thread
-            channel = await self.bot.fetch_channel(conf.get("DISCORD_STATE_CHANNEL"))
-            thread = await channel.create_thread(
-                name="F2D AutoSave", type=discord.ChannelType.public_thread
-            )
-            conf.set("DISCORD_AUTOSAVE_CHANNEL", thread.id)
+        do_save = False
 
         if datetime.datetime.now() > next_save:
+            do_save = True
+        else:
+            logger.info(f"No autosave required: Next save: {next_save}")
+
+        if do_save:
+            try:
+                thread = await self.bot.fetch_channel(
+                    conf.get("DISCORD_AUTOSAVE_CHANNEL")
+                )
+            except Exception as err:
+                self.handle_error(err, "Could not find Channel/Thread for Autosave")
+                # Creating Thread
+                channel = await self.bot.fetch_channel(
+                    conf.get("DISCORD_STATE_CHANNEL")
+                )
+                thread = await channel.create_thread(
+                    name="F2D AutoSave", type=discord.ChannelType.public_thread
+                )
+                conf.set("DISCORD_AUTOSAVE_CHANNEL", thread.id)
+
+            # Try to save the game
             logger.info(f"Using {thread} for auto save posts")
             dt = datetime.datetime.now()
             next_save = dt + datetime.timedelta(
@@ -105,8 +117,6 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             )
             await self.save(thread, save_name="Discord_AutoSave", silent=True)
             logger.info(f"Next save: {next_save}")
-        else:
-            logger.info(f"No autosave required: Next save: {next_save}")
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
