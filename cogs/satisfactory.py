@@ -52,24 +52,28 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         global last_server_state
         heart_beats += 1
         print(f"heartbeat: {heart_beats:4}")
-        udpstatus = self.probe_udp(conf)
-        server_state = self.serverStates[udpstatus["ServerState"]]
-        print(f"UDP Probe complete.  {server_state=}")
-        # server_name = udpstatus['ServerName']
-        if server_state != last_server_state:
-            if server_state == "Offline":
-                prefix_icon = "❌"
-            elif server_state == "Live":
-                prefix_icon = "✅"
+        try:
+            udpstatus = self.probe_udp(conf)
+            server_state = self.serverStates[udpstatus["ServerState"]]
+            print(f"UDP Probe complete.  {server_state=}")
+            # server_name = udpstatus['ServerName']
+            if server_state != last_server_state:
+                if server_state == "Offline":
+                    prefix_icon = "❌"
+                elif server_state == "Live":
+                    prefix_icon = "✅"
+                else:
+                    prefix_icon = "⚠"
+                # Do channel update
+                chan_id = conf.get("DISCORD_STATE_CHANNEL")
+                channel = await self.bot.fetch_channel(chan_id)
+                await channel.edit(name=f"satisfactory-{prefix_icon}")
             else:
-                prefix_icon = "⚠"
-            # Do channel update
-            chan_id = conf.get("DISCORD_STATE_CHANNEL")
-            channel = await self.bot.fetch_channel(chan_id)
-            await channel.edit(name=f"satisfactory-{prefix_icon}")
+                print("heartbeat: State did not change!")
+        except Exception as err:
+            self.handle_error(err, "Cloud not get server state!")
         else:
-            print("heartbeat: State did not change!")
-        await self.sf_auto_save()
+            await self.sf_auto_save()
 
     async def sf_auto_save(self):
         global next_save
@@ -77,6 +81,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             thread = await self.bot.fetch_channel(conf.get("DISCORD_AUTOSAVE_CHANNEL"))
         except Exception as err:
             self.handle_error(err, "Could not find Channel/Thread for Autosave")
+            # Creating Thread
             channel = await self.bot.fetch_channel(conf.get("DISCORD_STATE_CHANNEL"))
             thread = await channel.create_thread(
                 name="F2D AutoSave", type=discord.ChannelType.public_thread
