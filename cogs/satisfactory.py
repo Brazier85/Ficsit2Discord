@@ -63,6 +63,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             logger.info(f"UDP Probe complete.  {server_state=}")
             # server_name = udpstatus['ServerName']
             if server_state != last_server_state:
+                logger.info(
+                    f"Server state changed! New: {server_state} Old: {last_server_state}"
+                )
                 if server_state == "Offline":
                     prefix_icon = "❌"
                 elif server_state == "Live":
@@ -73,6 +76,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 chan_id = conf.get("DISCORD_STATE_CHANNEL")
                 channel = await self.bot.fetch_channel(chan_id)
                 await channel.edit(name=f"satisfactory-{prefix_icon}")
+                last_server_state = server_state
             else:
                 logger.info("heartbeat: State did not change!")
         except Exception as err:
