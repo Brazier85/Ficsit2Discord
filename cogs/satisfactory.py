@@ -57,7 +57,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         global last_server_state
         log_prefix = "heartbeat:"
         heart_beats += 1
-        logger.info(f"{log_prefix}  {heart_beats:4}")
+        logger.info(f"{log_prefix} {heart_beats:4}")
         try:
             udpstatus = self.probe_udp(conf)
             server_state = self.serverStates[udpstatus["ServerState"]]
@@ -79,7 +79,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 await channel.edit(name=f"satisfactory-{prefix_icon}")
                 last_server_state = server_state
             else:
-                logger.info("{log_prefix} State did not change!")
+                logger.info(f"{log_prefix} State did not change!")
         except Exception as err:
             self.handle_error(err, "Cloud not get server state!")
         else:
