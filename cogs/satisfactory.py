@@ -1,4 +1,5 @@
 import datetime
+import logging
 import socket
 import struct
 import sys
@@ -20,6 +21,9 @@ from data.mappers import (
     serverSubStates,
     settings_mapper,
 )
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 bot_logo = "https://raw.githubusercontent.com/Brazier85/Ficsit2Discord/refs/heads/main/files/f2d_logo.webp"
 conf = ConfigManager()
@@ -52,11 +56,11 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         global heart_beats
         global last_server_state
         heart_beats += 1
-        print(f"heartbeat: {heart_beats:4}")
+        logger.info(f"heartbeat: {heart_beats:4}")
         try:
             udpstatus = self.probe_udp(conf)
             server_state = self.serverStates[udpstatus["ServerState"]]
-            print(f"UDP Probe complete.  {server_state=}")
+            logger.info(f"UDP Probe complete.  {server_state=}")
             # server_name = udpstatus['ServerName']
             if server_state != last_server_state:
                 if server_state == "Offline":
@@ -70,7 +74,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 channel = await self.bot.fetch_channel(chan_id)
                 await channel.edit(name=f"satisfactory-{prefix_icon}")
             else:
-                print("heartbeat: State did not change!")
+                logger.info("heartbeat: State did not change!")
         except Exception as err:
             self.handle_error(err, "Cloud not get server state!")
         else:
@@ -90,15 +94,15 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
             conf.set("DISCORD_AUTOSAVE_CHANNEL", thread.id)
 
         if datetime.datetime.now() > next_save:
-            print(f"Using {thread} for auto save posts")
+            logger.info(f"Using {thread} for auto save posts")
             dt = datetime.datetime.now()
             next_save = dt + datetime.timedelta(
                 hours=2, minutes=-dt.minute, seconds=-dt.second
             )
             await self.save(thread, save_name="Discord_AutoSave", silent=True)
-            print(f"Next save: {next_save}")
+            logger.info(f"Next save: {next_save}")
         else:
-            print(f"No autosave required: Next save: {next_save}")
+            logger.info(f"No autosave required: Next save: {next_save}")
 
     @commands.hybrid_group(fallback="sf")
     async def sf(self, ctx):
@@ -287,7 +291,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         admin_role = self.admin_role
         # Check if role exists
         if discord.utils.get(guild.roles, name=admin_role) is not None:
-            print(f"Role `{admin_role}` already exists.")
+            logger.info(f"Role `{admin_role}` already exists.")
         else:
             # create role
             try:
@@ -296,7 +300,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                 self.handle_error(e, f"Could not create role `{admin_role}`.")
                 return
             else:
-                print(f"Role {admin_role} created")
+                logger.info(f"Role {admin_role} created")
                 await ctx.send(f"I created role `{admin_role}`.")
 
         # Add user to role
@@ -308,7 +312,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                     e, f"Could not add `{member}` to role `{admin_role}`."
                 )
             else:
-                print(f"@{member} added to role {admin_role} created")
+                logger.info(f"@{member} added to role {admin_role} created")
                 await ctx.send(f"I added {member.mention} to role `{admin_role}`.")
 
     @user.command(name="remove")
@@ -318,9 +322,9 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         admin_role = self.admin_role
         # Check if role exists
         if discord.utils.get(guild.roles, name=admin_role) is not None:
-            print(f"Role {admin_role} already exists.")
+            logger.info(f"Role {admin_role} already exists.")
         else:
-            print(f"Role {admin_role} does not exist!")
+            logger.info(f"Role {admin_role} does not exist!")
             await ctx.send(f"There are no users configured in role `{admin_role}`.")
 
         # Remove user from role
@@ -334,7 +338,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
                     e, f"Could not remove `{member}` from role `{admin_role}`."
                 )
             else:
-                print(f"@{member} removed from role {admin_role}")
+                logger.info(f"@{member} removed from role {admin_role}")
                 await ctx.send(f"I removed {member.mention} from role `{admin_role}`.")
 
     @commands.has_role(conf.get("DISCORD_SF_ADMIN_ROLE"))
@@ -416,7 +420,7 @@ class Satisfactory(commands.Cog, name="Satisfactory Commands"):
         return embed
 
     def handle_error(self, err, context_message="An error occurred"):
-        print(f"{context_message}: Unexpected {err=}, {type(err)=}")
+        logger.error(f"{context_message}: Unexpected {err=}, {type(err)=}")
 
     async def perform_server_action(
         self,
@@ -547,7 +551,7 @@ def main() -> None:
     try:
         raise NotImplementedError("satisfactory.py should not be executed directly.")
     except NotImplementedError as e:
-        print(f"{e}")
+        logger.error(f"{e}")
         sys.exit(1)
 
 
